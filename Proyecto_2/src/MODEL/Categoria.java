@@ -6,13 +6,13 @@ package MODEL;
  *
  * @author Bravo
  */
-public class DAOCategoria {
+public class Categoria {
 
     private int id_categoria;
     private String nombre;
     private String descripcion;
 
-    public DAOCategoria(int id_categoria, String nombre, String descripcion) {
+    public Categoria(int id_categoria, String nombre, String descripcion) {
         this.id_categoria = id_categoria;
         this.nombre = nombre;
         this.descripcion = descripcion;

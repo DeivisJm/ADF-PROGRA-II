@@ -115,7 +115,7 @@ public class ProductoPanel extends javax.swing.JPanel {
         if (parent != null) {
             cantidad = (int) spnCantidad.getValue();
             precioTotal = producto.getPrecio() * cantidad;
-            parent.agregarProducto(producto, cantidad, precioTotal);
+            parent.agregarProductoAlCarrito(producto, cantidad, precioTotal);
         }
             parent.actualizarSubtotal();
     }//GEN-LAST:event_btnComprarActionPerformed

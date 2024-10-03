@@ -58,9 +58,9 @@ public class FacturacionBO {
         facturacion.getFacturaProducto().append("                                                                                     Total\t").append(facturacion.getSubTotal() + (facturacion.getSubTotal() / 15));
     }
 
-    public void eliminarFila(JTable tabla) {
-        DefaultTableModel model = (DefaultTableModel) tabla.getModel();
-        int eliminar = tabla.getSelectedRow();
+    public void eliminarFila(JTable tblCarrito) {
+        DefaultTableModel model = (DefaultTableModel) tblCarrito.getModel();
+        int eliminar = tblCarrito.getSelectedRow();
         if (eliminar >= 0) {
             model.removeRow(eliminar);
         }

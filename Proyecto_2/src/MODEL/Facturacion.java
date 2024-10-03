@@ -13,6 +13,7 @@ public class Facturacion {
     private Usuario usuario;
 
     public Facturacion(Usuario usuario) {
+        this();
         this.usuario = usuario;
     }
 
@@ -22,6 +23,17 @@ public class Facturacion {
         this.cantidad = cantidad;
         this.precio = precio;
         this.subTotal = subTotal;
+        this.FacturaProducto = new StringBuilder();
+    }
+
+    // Constructor sin argumentos
+    public Facturacion() {
+        this.nombre = "";
+        this.peso = "";
+        this.cantidad = 0;
+        this.precio = 0.0;
+        this.subTotal = 0.0;
+        this.FacturaProducto = new StringBuilder();
     }
 
     public String getNombre() {

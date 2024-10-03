@@ -2,7 +2,9 @@ package BO;
 
 import DAO.ClienteDAO;
 import MODEL.Cliente;
+import java.io.IOException;
 import javax.swing.table.DefaultTableModel;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -26,5 +28,10 @@ public class ClienteBO {
 
     public void eliminarCliente(int id) {
         clienteDAO.eliminarCliente(id);
+
+    }
+
+    public int obtenerIdClientePorNombre(String nombreCliente) throws IOException, ParseException {
+        return clienteDAO.obtenerIdClientePorNombre(nombreCliente);
     }
 }

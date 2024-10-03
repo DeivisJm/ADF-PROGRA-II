@@ -152,4 +152,24 @@ public class ClienteDAO {
             e.printStackTrace();
         }
     }
+
+    public int obtenerIdClientePorNombre(String nombreCliente) throws IOException, ParseException {
+        JSONParser parser = new JSONParser();
+        int idCliente = -1;
+
+        try (FileReader reader = new FileReader("cliente.json")) {
+            JSONArray clientesArray = (JSONArray) parser.parse(reader);
+
+            for (Object obj : clientesArray) {
+                JSONObject cliente = (JSONObject) obj;
+                String nombre = (String) cliente.get("nombre");
+                if (nombreCliente.equals(nombre)) {
+                    idCliente = Integer.parseInt(cliente.get("id").toString());
+                    break;
+                }
+            }
+        }
+
+        return idCliente;
+    }
 }

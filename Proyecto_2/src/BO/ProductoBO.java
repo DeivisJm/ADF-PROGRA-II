@@ -31,4 +31,15 @@ public class ProductoBO {
         // Lógica de negocio para editar un producto
         productoDAO.editarProducto(subcategoria, producto);
     }
+
+    public int verificarProductoExistente(DefaultTableModel model, String nombreProducto) {
+        int rowCount = model.getRowCount();
+        for (int row = 0; row < rowCount; row++) {
+            String nombreExistente = (String) model.getValueAt(row, 0);
+            if (nombreExistente.equals(nombreProducto)) {
+                return row;
+            }
+        }
+        return -1; // Producto no encontrado
+    }
 }

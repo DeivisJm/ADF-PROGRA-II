@@ -121,4 +121,28 @@ public class CompraDAO {
             e.printStackTrace();
         }
     }
+
+    public String obtenerIdProductoPorNombreYSubcategoria(String nombreProducto, String subCategoria) throws IOException, ParseException {
+        JSONParser parser = new JSONParser();
+        String idProducto = null;
+
+        try (FileReader reader = new FileReader("productos.json")) {
+            JSONObject main = (JSONObject) parser.parse(reader);
+            JSONArray categoriaProductos = (JSONArray) main.get(subCategoria);
+
+            if (categoriaProductos != null) {
+                for (Object productoObj : categoriaProductos) {
+                    JSONObject producto = (JSONObject) productoObj;
+                    String nombre = (String) producto.get("nombre");
+                    if (nombreProducto.equals(nombre)) {
+                        idProducto = (String) producto.get("id");
+                        break;
+                    }
+                }
+            }
+        }
+
+        return idProducto;
+    }
+    
 }

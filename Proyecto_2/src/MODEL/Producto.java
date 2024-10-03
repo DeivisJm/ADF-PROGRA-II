@@ -55,6 +55,16 @@ public class Producto {
         this.idMarca = idMarca;
     }
 
+    public Producto() {
+        this.idProducto = "";
+        this.nombre = "";
+        this.precio = 0.0;
+        this.idProveedor = "";
+        this.idCategoria = "";
+        this.idMarca = "";
+        this.peso = "";
+    }
+
     public String getNombre() {
         return nombre;
     }

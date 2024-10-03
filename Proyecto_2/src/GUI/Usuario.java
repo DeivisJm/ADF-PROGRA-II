@@ -1,12 +1,7 @@
 package GUI;
 
-import MODEL.Producto;
-import MODEL.Cliente;
-import MODEL.DetalleCompra;
-import BO.IDManagerBO;
-import MODEL.Compra;
-import MODEL.Facturacion;
-import MODEL.Datos;
+import BO.*;
+import MODEL.*;
 import java.applet.AudioClip;
 import java.io.*;
 import java.text.*;
@@ -18,7 +13,8 @@ import org.json.simple.parser.*;
 
 public class Usuario extends javax.swing.JFrame {
 
-    private Facturacion factura = new Facturacion(this);
+    private FacturacionBO facturacionBO;
+    private ProductoBO productoBO;
     private DetalleCompra detallecompra = new DetalleCompra(this);
     private Compra compra = new Compra(this);
     private Cliente cliente = new Cliente(this);
@@ -36,19 +32,26 @@ public class Usuario extends javax.swing.JFrame {
         comboCategorias.addItem("Mascotas");
         comboCategorias.addItem("Frescos");
         comboSubcategorias.addItem("Elegir...");
+        Facturacion facturacion = new Facturacion(); // Asegúrate de que Facturacion tenga un constructor sin argumentos o usar otro adecuado.
+        Producto producto = new Producto(); // Igual, asegúrate de que Producto esté bien instanciado.
+        this.facturacionBO = new FacturacionBO(facturacion);
+        this.productoBO = new ProductoBO();
+
     }
-    
+
+
     /*with this method we update the subtotal txt to show the total sum in the txt.*/
     public void actualizarSubtotal() {
         double subtotal = 0.0;
 
         for (int row = 0; row < tblCarrito.getRowCount(); row++) {
-           double precio = (double) tblCarrito.getValueAt(row, tblCarrito.getColumnModel().getColumnIndex("Precio"));
+            double precio = (double) tblCarrito.getValueAt(row, tblCarrito.getColumnModel().getColumnIndex("Precio"));
             subtotal += precio;
         }
 
         txtSubtotal.setText(String.valueOf(subtotal));
     }
+
     /*with this method we update the subtotal txt to show the total rest in the txt.*/
     private void actualizarSubtotalResta() {
         double nuevoSubtotal = 0.0;
@@ -61,32 +64,47 @@ public class Usuario extends javax.swing.JFrame {
         subtotal = nuevoSubtotal;
         txtSubtotal.setText(String.valueOf(subtotal));
     }
-    
+
     //here ew can delete a product a my carrito
     public void eliminarProducto(int fila) {
         double precio = (double) tblCarrito.getValueAt(fila, tblCarrito.getColumnModel().getColumnIndex("Precio"));
         subtotal -= precio;
         actualizarSubtotal();
     }
-    
+
     /*here we check if the product exists and if it does by means of an if the method obtains 
     the value of the row and the column and then inserts the new value. */
-    public void agregarProducto(Producto producto, int cantidad, double precioTotal) {
+    public void agregarProductoAlCarrito(Producto producto, int cantidad, double precioTotal) {
         DefaultTableModel model = (DefaultTableModel) tblCarrito.getModel();
 
-        int row = producto.productoExistente(model, producto.getNombre());
-        if (row != -1) {
-   
-            int cantidadExistente = (int) model.getValueAt(row, 2);
-            double precioTotalExistente = (double) model.getValueAt(row, 3);
-            model.setValueAt(cantidadExistente + cantidad, row, 2);
-            model.setValueAt(precioTotalExistente + precioTotal, row, 3);
-        } else {
-
-            model.addRow(new Object[]{producto.getNombre(), producto.getPeso(), cantidad, precioTotal});
+        // Llamar al método en ProductoBO que maneja la lógica de agregar al carrito
+        try {
+            int row = productoBO.verificarProductoExistente(model, producto.getNombre());
+            if (row != -1) {
+                // Actualizar cantidad y precio total si el producto ya existe en el carrito
+                int cantidadExistente = (int) model.getValueAt(row, 2);
+                double precioTotalExistente = (double) model.getValueAt(row, 3);
+                model.setValueAt(cantidadExistente + cantidad, row, 2);
+                model.setValueAt(precioTotalExistente + precioTotal, row, 3);
+            } else {
+                // Agregar nuevo producto al carrito
+                model.addRow(new Object[]{producto.getNombre(), producto.getPeso(), cantidad, precioTotal});
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Ocurrió un error al agregar el producto al carrito.", "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
-    
+
+    public void facturarCarrito() {
+        try {
+            facturacionBO.Facturar(tblCarrito, txtFactura);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Ocurrió un error al facturar.", "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
     //With this method we can obtein the actual date
     private String obtenerFechaActual() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -122,13 +140,14 @@ public class Usuario extends javax.swing.JFrame {
                 break;
         }
     }
-    
+
     //we add the subcategories
     private void agregarSubcategoriaItems(String... items) {
         for (String item : items) {
             comboSubcategorias.addItem(item);
         }
     }
+
     //here we charge de products in a scroll
     private void cargarProductos(String subcategoria) {
         Datos datos = new Datos();
@@ -143,7 +162,6 @@ public class Usuario extends javax.swing.JFrame {
         JTabMain = new javax.swing.JTabbedPane();
         JpInicio = new javax.swing.JPanel();
         JPLinea = new javax.swing.JPanel();
-        lblLema = new javax.swing.JLabel();
         lblNombreEmpresa = new javax.swing.JLabel();
         lblImejenInicio = new javax.swing.JLabel();
         JpCategorias = new javax.swing.JPanel();
@@ -173,8 +191,7 @@ public class Usuario extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        JTabMain.setBackground(new java.awt.Color(255, 153, 0));
-        JTabMain.setForeground(new java.awt.Color(0, 0, 0));
+        JTabMain.setBackground(new java.awt.Color(153, 204, 255));
         JTabMain.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         JTabMain.setOpaque(true);
 
@@ -186,29 +203,24 @@ public class Usuario extends javax.swing.JFrame {
         JPLinea.setLayout(JPLineaLayout);
         JPLineaLayout.setHorizontalGroup(
             JPLineaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 530, Short.MAX_VALUE)
+            .addGap(0, 730, Short.MAX_VALUE)
         );
         JPLineaLayout.setVerticalGroup(
             JPLineaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        JpInicio.add(JPLinea, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 300, 530, 10));
-
-        lblLema.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        lblLema.setForeground(new java.awt.Color(0, 0, 204));
-        lblLema.setText("\"China y Costa Rica unidos por el bien de nuestros clientes\"");
-        JpInicio.add(lblLema, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, 320, 490, -1));
+        JpInicio.add(JPLinea, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 300, 730, 10));
 
         lblNombreEmpresa.setBackground(new java.awt.Color(0, 0, 0));
         lblNombreEmpresa.setFont(new java.awt.Font("Segoe UI Emoji", 0, 48)); // NOI18N
-        lblNombreEmpresa.setText("Bienvenidos a ChinoTico");
+        lblNombreEmpresa.setText("Bienvenidos a ADF VIRTUAL STORE");
         lblNombreEmpresa.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lblNombreEmpresaMouseClicked(evt);
             }
         });
-        JpInicio.add(lblNombreEmpresa, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 250, 520, -1));
+        JpInicio.add(lblNombreEmpresa, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 250, 750, -1));
 
         lblImejenInicio.setForeground(new java.awt.Color(0, 0, 153));
         lblImejenInicio.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Fondos/Retail-de-supermercado.png"))); // NOI18N
@@ -225,7 +237,6 @@ public class Usuario extends javax.swing.JFrame {
         JpCarrito1.setBorder(javax.swing.BorderFactory.createTitledBorder("CARRITO"));
         JpCarrito1.setPreferredSize(new java.awt.Dimension(500, 804));
 
-        btnEliminarCarrito1.setBackground(new java.awt.Color(255, 255, 255));
         btnEliminarCarrito1.setForeground(new java.awt.Color(255, 255, 255));
         btnEliminarCarrito1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Fondos/basurero.png"))); // NOI18N
         btnEliminarCarrito1.setText("Eliminar");
@@ -246,7 +257,6 @@ public class Usuario extends javax.swing.JFrame {
         ));
         scrollCarrito.setViewportView(tblCarrito);
 
-        btnFinalizar.setBackground(new java.awt.Color(255, 255, 255));
         btnFinalizar.setForeground(new java.awt.Color(255, 255, 255));
         btnFinalizar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Fondos/FinalizarCompra.png"))); // NOI18N
         btnFinalizar.setText("Finalizar Compra");
@@ -265,24 +275,19 @@ public class Usuario extends javax.swing.JFrame {
         txtSubtotal.setFont(new java.awt.Font("Arial", 3, 14)); // NOI18N
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(0, 0, 0));
         jLabel4.setText("Eliminar");
 
         jLabel5.setBackground(new java.awt.Color(255, 255, 255));
         jLabel5.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jLabel5.setForeground(new java.awt.Color(0, 0, 0));
         jLabel5.setText("Guardar");
 
         jLabel6.setBackground(new java.awt.Color(255, 255, 255));
         jLabel6.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jLabel6.setForeground(new java.awt.Color(0, 0, 0));
         jLabel6.setText("Finalizar");
 
         jLabel7.setFont(new java.awt.Font("Arial", 3, 14)); // NOI18N
-        jLabel7.setForeground(new java.awt.Color(0, 0, 0));
         jLabel7.setText("Subtotal:");
 
-        btnGuardarCompra.setBackground(new java.awt.Color(255, 255, 255));
         btnGuardarCompra.setForeground(new java.awt.Color(255, 255, 255));
         btnGuardarCompra.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Fondos/GuardarCompra.png"))); // NOI18N
         btnGuardarCompra.setText("Guardar Compra");
@@ -312,32 +317,29 @@ public class Usuario extends javax.swing.JFrame {
                         .addGroup(JpCarrito1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnFinalizar, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(JpCarrito1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(JpCarrito1Layout.createSequentialGroup()
-                                .addGap(12, 12, 12)
-                                .addComponent(jLabel7)
-                                .addGap(174, 174, 174)
-                                .addComponent(jLabel3))
-                            .addGroup(JpCarrito1Layout.createSequentialGroup()
-                                .addGap(70, 70, 70)
-                                .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(12, 12, 12)
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(80, 80, 80)
+                        .addComponent(jLabel3))
                     .addGroup(JpCarrito1Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(scrollCarrito, javax.swing.GroupLayout.PREFERRED_SIZE, 412, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(scrollCarrito, javax.swing.GroupLayout.PREFERRED_SIZE, 406, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         JpCarrito1Layout.setVerticalGroup(
             JpCarrito1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(JpCarrito1Layout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(scrollCarrito, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(JpCarrito1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(JpCarrito1Layout.createSequentialGroup()
                         .addGroup(JpCarrito1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtSubtotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, JpCarrito1Layout.createSequentialGroup()
                         .addGroup(JpCarrito1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -383,16 +385,12 @@ public class Usuario extends javax.swing.JFrame {
         jScrollPane1.setViewportView(txtFactura);
 
         jLabel1.setFont(new java.awt.Font("Arial", 3, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(0, 0, 0));
         jLabel1.setText("Sub Categorias");
 
         jLabel2.setFont(new java.awt.Font("Arial", 3, 14)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(0, 0, 0));
         jLabel2.setText("Categorias");
 
-        btnCerrarSesion.setBackground(new java.awt.Color(255, 255, 255));
         btnCerrarSesion.setFont(new java.awt.Font("Arial", 3, 12)); // NOI18N
-        btnCerrarSesion.setForeground(new java.awt.Color(0, 0, 0));
         btnCerrarSesion.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Fondos/Logout_37127.png"))); // NOI18N
         btnCerrarSesion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -401,7 +399,6 @@ public class Usuario extends javax.swing.JFrame {
         });
 
         jLabel8.setFont(new java.awt.Font("Arial", 3, 14)); // NOI18N
-        jLabel8.setForeground(new java.awt.Color(0, 0, 0));
         jLabel8.setText("Cerrar Sesion");
 
         javax.swing.GroupLayout JpCategorias1Layout = new javax.swing.GroupLayout(JpCategorias1);
@@ -426,11 +423,11 @@ public class Usuario extends javax.swing.JFrame {
                     .addGroup(JpCategorias1Layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(scrollProductos, javax.swing.GroupLayout.PREFERRED_SIZE, 1047, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(65, 65, 65)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(JpCategorias1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(JpCarrito1, javax.swing.GroupLayout.PREFERRED_SIZE, 448, Short.MAX_VALUE)
+                            .addComponent(JpCarrito1, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jScrollPane1))))
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(126, Short.MAX_VALUE))
         );
         JpCategorias1Layout.setVerticalGroup(
             JpCategorias1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -447,15 +444,14 @@ public class Usuario extends javax.swing.JFrame {
                     .addGroup(JpCategorias1Layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(jLabel8)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(JpCategorias1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(JpCategorias1Layout.createSequentialGroup()
-                        .addGap(41, 41, 41)
-                        .addComponent(JpCarrito1, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE))
-                    .addGroup(JpCategorias1Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(scrollProductos, javax.swing.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE)))
+                        .addComponent(JpCarrito1, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 339, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(scrollProductos, javax.swing.GroupLayout.DEFAULT_SIZE, 730, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -481,11 +477,13 @@ public class Usuario extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(JTabMain, javax.swing.GroupLayout.PREFERRED_SIZE, 1508, Short.MAX_VALUE)
+            .addComponent(JTabMain, javax.swing.GroupLayout.PREFERRED_SIZE, 1552, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(JTabMain, javax.swing.GroupLayout.PREFERRED_SIZE, 841, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(JTabMain, javax.swing.GroupLayout.PREFERRED_SIZE, 841, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(9, Short.MAX_VALUE))
         );
 
         pack();
@@ -504,101 +502,95 @@ public class Usuario extends javax.swing.JFrame {
     }//GEN-LAST:event_comboSubcategoriasActionPerformed
 
     private void btnFinalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFinalizarActionPerformed
-        this.factura.Facturar(tblCarrito, txtFactura);
+        this.facturarCarrito();
     }//GEN-LAST:event_btnFinalizarActionPerformed
 
     private void btnEliminarCarrito1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarCarrito1ActionPerformed
-        this.factura.eliminarFila(tblCarrito);
         int filaSeleccionada = tblCarrito.getSelectedRow();
-        if (filaSeleccionada >= -1) {
-            eliminarProducto(filaSeleccionada);
-            actualizarSubtotalResta();
+        if (filaSeleccionada >= 0) {
+            // Llamar al método eliminarFila desde FacturacionBO
+            facturacionBO.eliminarFila(tblCarrito);  // Elimina la fila seleccionada
+
+            // Actualizar la lógica interna y el subtotal después de eliminar la fila
+            eliminarProducto(filaSeleccionada);    // Elimina el producto de la lógica interna
+            actualizarSubtotalResta();             // Actualiza el subtotal
+
+            JOptionPane.showMessageDialog(this, "Producto eliminado del carrito.");
+        } else {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un producto en el carrito para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnEliminarCarrito1ActionPerformed
 
     private void btnGuardarCompraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarCompraActionPerformed
         String subCategoria = (String) comboSubcategorias.getSelectedItem();
         DefaultTableModel modeloTablaCarrito = (DefaultTableModel) tblCarrito.getModel();
-        // we can get the number of the rows the tblCarrito has
         int rowCount = modeloTablaCarrito.getRowCount();
-        IDManagerBO idmanager = new IDManagerBO();
-        Administrador admin = new Administrador(); 
-        //here we usse the method to generate ID
-        int nuevoIdCompras = (idmanager.generarID("compra.json") + 1);
-        double nuevoMontoTotal = 0.0; 
-        int idCliente = -1; 
-        //We do the login and reed the json cliente and verificate that this clieny dont exist
-        String nombreCliente = login.getNombreUsuario();
-        JSONParser parser = new JSONParser();
-        try (FileReader reader = new FileReader("cliente.json")) {
-            JSONArray clientesArray = (JSONArray) parser.parse(reader);
-            //Create a json object named cliente for adding the new client
-            for (Object obj : clientesArray) {
-                JSONObject cliente = (JSONObject) obj;
-                String jsonUsername = (String) cliente.get("nombre");
-                int jsonId = Integer.parseInt(cliente.get("id").toString());
 
-                if (nombreCliente.equals(jsonUsername)) {
-                    idCliente = jsonId; 
-                    break; 
-                }
-            }
+        IDManagerBO idManagerBO = new IDManagerBO();
+        CompraBO compraBO = new CompraBO();
+        DetalleCompraBO detalleCompraBO = new DetalleCompraBO();
+        ClienteBO clienteBO = new ClienteBO();
+
+        int nuevoIdCompras = idManagerBO.generarID("compra.json") + 1;
+        double nuevoMontoTotal = 0.0;
+        int idCliente = -1;
+
+        String nombreCliente = login.getNombreUsuario();
+
+        try {
+            idCliente = clienteBO.obtenerIdClientePorNombre(nombreCliente);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //Here we can get the the cantidad and monto to the new buy
-        if (idCliente != 0) { 
+
+        if (idCliente != -1) {
             for (int i = 0; i < rowCount; i++) {
-                int nuevoIdDetalleCompra = (idmanager.generarID("DetalleCompra.json") + 1);
+                int nuevoIdDetalleCompra = idManagerBO.generarID("DetalleCompra.json") + 1;
                 int nuevaCantidad = (int) modeloTablaCarrito.getValueAt(i, 2);
                 double nuevoMonto = (double) modeloTablaCarrito.getValueAt(i, 3);
                 String nombreProducto = (String) modeloTablaCarrito.getValueAt(i, 0);
 
                 String nuevoIdProducto = null;
-                try (Reader reader = new FileReader("productos.json")) {
-                    JSONObject main = (JSONObject) parser.parse(reader);
-
-                    JSONArray categoriaProductos = (JSONArray) main.get(subCategoria);
-                    //here we get the id that this name has, the name of the new client
-                    for (Object productoObj : categoriaProductos) {
-                        JSONObject producto = (JSONObject) productoObj;
-                        String nombre = (String) producto.get("nombre");
-                        String idProducto = (String) producto.get("id");
-                        if (nombre.equals(nombreProducto)) {
-                            nuevoIdProducto = idProducto;
-                            break;
-                        }
-                    }
-
+                try {
+                    nuevoIdProducto = compraBO.obtenerIdProductoPorNombreYSubcategoria(nombreProducto, subCategoria);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                //here we add a new buy datail and 
+
                 if (nuevoIdProducto != null) {
                     DetalleCompra nuevoDetalle = new DetalleCompra(nuevoIdDetalleCompra, nuevaCantidad, nuevoMonto, nuevoIdProducto, nuevoIdCompras);
-                    detallecompra.guardarDetalleCompra(nuevoDetalle);
-                    admin.actualizarTablaDetalle();
-                    nuevoMontoTotal += nuevoMonto; 
+                    try {
+                        detalleCompraBO.guardarDetalleCompra(nuevoDetalle);
+                        nuevoMontoTotal += nuevoMonto;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-            
-            int nuevoIddetalleCompra = (idmanager.generarID("DetalleCompra.json") + 1);
-            String fechaActual = obtenerFechaActual(); 
-            int nuevoIdCompra = (idmanager.generarID("compra.json") + 1);
-            Compra nuevaCompra = new Compra(nuevoIdCompra, fechaActual, nuevoMontoTotal, idCliente, nuevoIddetalleCompra);
-            compra.guardarCompra(nuevaCompra);
-            admin.actualizarTablaCompra(); 
-            modeloTablaCarrito.getDataVector().removeAllElements();
-            modeloTablaCarrito.fireTableDataChanged(); 
+
+            String fechaActual = obtenerFechaActual();
+            Compra nuevaCompra = new Compra(nuevoIdCompras, fechaActual, nuevoMontoTotal, idCliente, nuevoIdCompras);
+
+            try {
+                compraBO.guardarCompra(nuevaCompra);
+                compraBO.actualizarTabla((DefaultTableModel) tblCarrito.getModel());
+                modeloTablaCarrito.getDataVector().removeAllElements();
+                modeloTablaCarrito.fireTableDataChanged();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al guardar la compra: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+
         } else {
             JOptionPane.showMessageDialog(this, "Cliente no encontrado.");
         }
+
     }//GEN-LAST:event_btnGuardarCompraActionPerformed
 
     private void lblNombreEmpresaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblNombreEmpresaMouseClicked
         // TODO add your handling code here:
-             AudioClip sound = java.applet.Applet.newAudioClip(getClass().getResource("/Sonidos/Bienvenidos.wav"));
-             sound.play();
+        AudioClip sound = java.applet.Applet.newAudioClip(getClass().getResource("/Sonidos/Bienvenidos.wav"));
+        sound.play();
     }//GEN-LAST:event_lblNombreEmpresaMouseClicked
 
     private void btnCerrarSesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCerrarSesionActionPerformed
@@ -631,7 +623,6 @@ public class Usuario extends javax.swing.JFrame {
     private javax.swing.JPanel jPProductos;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblImejenInicio;
-    private javax.swing.JLabel lblLema;
     private javax.swing.JLabel lblNombreEmpresa;
     private javax.swing.JScrollPane scrollCarrito;
     private javax.swing.JScrollPane scrollProductos;

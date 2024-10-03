@@ -30,20 +30,26 @@ public class ProveedorBO {
         proveedorDAO.guardarProveedor(proveedor);
     }
 
-    public void actualizarTabla(DefaultTableModel modeloTabla) throws IOException, ParseException {
-        JSONArray proveedorArray = proveedorDAO.leerProveedores();
-        modeloTabla.setRowCount(0);
+    public void actualizarTabla(DefaultTableModel modeloTabla) {
+        try {
+            // Obtener la lista de proveedores desde el DAO
+            JSONArray proveedoresArray = proveedorDAO.leerProveedores();
 
-        for (Object obj : proveedorArray) {
-            JSONObject proveedorJSON = (JSONObject) obj;
-            int Id = Integer.parseInt(proveedorJSON.get("id").toString());
-            if (Id != 0) {
-                String Cedula = proveedorJSON.get("cedula") != null ? proveedorJSON.get("cedula").toString() : "";
-                String Nombre = proveedorJSON.get("nombre") != null ? proveedorJSON.get("nombre").toString() : "";
-                String Telefono = proveedorJSON.get("telefono") != null ? proveedorJSON.get("telefono").toString() : "";
-                String Correo = proveedorJSON.get("correo") != null ? proveedorJSON.get("correo").toString() : "";
-                modeloTabla.addRow(new Object[]{Id, Cedula, Nombre, Telefono, Correo});
+            // Limpiar la tabla antes de agregar los nuevos datos
+            modeloTabla.setRowCount(0);
+
+            // Agregar los proveedores al modelo de la tabla
+            for (Object obj : proveedoresArray) {
+                JSONObject proveedorJSON = (JSONObject) obj;
+                int id = Integer.parseInt(proveedorJSON.get("id").toString());
+                String cedula = proveedorJSON.get("cedula").toString();
+                String nombre = proveedorJSON.get("nombre").toString();
+                String telefono = proveedorJSON.get("telefono").toString();
+                String correo = proveedorJSON.get("correo").toString();
+                modeloTabla.addRow(new Object[]{id, cedula, nombre, telefono, correo});
             }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace(); // Manejar las excepciones adecuadamente
         }
     }
 
