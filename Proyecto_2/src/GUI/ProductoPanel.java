@@ -8,8 +8,8 @@ public class ProductoPanel extends javax.swing.JPanel {
     private int cantidad;
     private double precioTotal;
     private Usuario parent;
-    
-    /*Here we are set the text in the lbls of products and getting the name and more valvues */
+
+    //Configuramos el texto en las etiquetas de los productos
     public ProductoPanel(Producto producto, Usuario parent) {
         try {
             initComponents();
@@ -23,7 +23,6 @@ public class ProductoPanel extends javax.swing.JPanel {
             System.out.println(producto.getImagen());
         }
         this.parent = parent;
-
     }
 
     @SuppressWarnings("unchecked")
@@ -52,7 +51,7 @@ public class ProductoPanel extends javax.swing.JPanel {
         lblPrecio.setFont(new java.awt.Font("Arial", 0, 24)); // NOI18N
         lblPrecio.setText("Precio");
 
-        btnComprar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Fondos/Carrito.png"))); // NOI18N
+        btnComprar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Fondos/carrito.jpg"))); // NOI18N
         btnComprar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnComprarActionPerformed(evt);
@@ -117,7 +116,7 @@ public class ProductoPanel extends javax.swing.JPanel {
             precioTotal = producto.getPrecio() * cantidad;
             parent.agregarProductoAlCarrito(producto, cantidad, precioTotal);
         }
-            parent.actualizarSubtotal();
+        parent.actualizarSubtotal();
     }//GEN-LAST:event_btnComprarActionPerformed
 
     private void spnCantidadStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spnCantidadStateChanged

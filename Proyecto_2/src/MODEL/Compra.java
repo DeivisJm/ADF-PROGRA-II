@@ -4,7 +4,7 @@ import GUI.*;
 
 /**
  *
- * @author Bravo
+ * @author deivi
  */
 public class Compra {
 

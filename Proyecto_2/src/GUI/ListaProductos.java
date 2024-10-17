@@ -1,4 +1,3 @@
-
 package GUI;
 
 import MODEL.Producto;
@@ -6,30 +5,37 @@ import java.awt.GridLayout;
 import java.util.List;
 import javax.swing.JPanel;
 
+/**
+ *
+ * @author fabri
+ */
 
 public class ListaProductos extends javax.swing.JPanel {
-    //Create variable type list of product
+
+    //Crear lista de productos
     private List<Producto> productos;
     private Usuario parent;
-    
+
     public ListaProductos(List<Producto> productos, Usuario parent) {
         initComponents();
         this.productos = productos;
         this.parent = parent;
         this.imprimirProductos();
-        
+
     }
-    //Method for print the panels with a for to get a index and then we do a instance of ProductoPanel
-    private void imprimirProductos(){
+
+    //Metodo para imprimir los paneles, con un for para obtener un indice y luego hacemos una instancia de ProductoPanel
+    private void imprimirProductos() {
         JPanel panel;
         setLayout(new GridLayout(0, 3, 8, 8));
-        
+
         for (int i = 0; i < productos.size(); i++) {
             Producto producto = productos.get(i);
             panel = new ProductoPanel(producto, parent);
             add(panel);
         }
     }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

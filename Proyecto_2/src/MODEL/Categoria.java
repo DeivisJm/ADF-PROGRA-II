@@ -1,10 +1,8 @@
-
 package MODEL;
-
 
 /**
  *
- * @author Bravo
+ * @author deivi
  */
 public class Categoria {
 
@@ -18,17 +16,14 @@ public class Categoria {
         this.descripcion = descripcion;
     }
 
- 
     public int getId_categoria() {
         return id_categoria;
     }
-
 
     public void setId_categoria(int id_categoria) {
         this.id_categoria = id_categoria;
     }
 
-    
     public String getNombre() {
         return nombre;
     }

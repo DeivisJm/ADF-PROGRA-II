@@ -1,4 +1,3 @@
-
 package GUI;
 
 import java.io.*;
@@ -12,20 +11,19 @@ import org.json.simple.parser.*;
  * @author deivis
  */
 public class Login extends javax.swing.JFrame {
-    //we write the administrators and assign 3 valid passwords for it and with the Arrays.asList we convert the array to a list
+
+    //Admins, hay 3 contrasenas  y con el Arrays.asList convertimos el array a una lista
     private final String CLIENTES_JSON_FILE = "cliente.json";
     private final List<String> nombresAdministradores = Arrays.asList("deivis", "Andrew", "Fabri", "fabri");
     private final List<String> contraseñasAdministradores = Arrays.asList("admin", "ADMINPASS2", "123", "123");
     private final List<String> contraseñasClientes = Arrays.asList("1", "2", "3", "4");
 
-   
     public Login() {
         initComponents();
         setResizable(false);
         setLocationRelativeTo(null);
     }
-    
-    //here we validate the correct date of the clients with a boolean
+
     private boolean verificarCredenciales(String username, String password) {
         if (contraseñasAdministradores.contains(password) && nombresAdministradores.contains(username)) {
             return true;
@@ -33,16 +31,16 @@ public class Login extends javax.swing.JFrame {
 
         if (contraseñasClientes.contains(password)) {
             JSONParser parser = new JSONParser();
-            //here we reed the json fle
+            //Se lee el Json
             try (FileReader reader = new FileReader(CLIENTES_JSON_FILE)) {
                 JSONArray clientesArray = (JSONArray) parser.parse(reader);
-                //Create a json object with a array where we get the client name
+                //Se crea un objeto Json con un array donde agarra el nombre del cliente
                 for (Object obj : clientesArray) {
                     JSONObject cliente = (JSONObject) obj;
-                    String jsonUsername = (String) cliente.get("nombre");// get the name of the json
+                    String jsonUsername = (String) cliente.get("nombre");
 
                     if (username.equals(jsonUsername)) {
-                        return true; // The credentials are valid for customers
+                        return true; // Las credenciales son válidas para los clientes
                     }
                 }
             } catch (Exception e) {
@@ -50,7 +48,7 @@ public class Login extends javax.swing.JFrame {
             }
         }
 
-        return false; // Credentials are not valid
+        return false; // Las credenciales no son válidas
     }
 
     public String getNombreUsuario() {
@@ -176,7 +174,7 @@ public class Login extends javax.swing.JFrame {
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         String username = txtUsuario.getText();
         String password = txtContraseña.getText();
-        // Check the correct date
+        //   Verificamops is es admin o usuario
         if (verificarCredenciales(username, password)) {
             if (contraseñasAdministradores.contains(password)) {
                 Administrador adminFrame = new Administrador();
@@ -184,12 +182,12 @@ public class Login extends javax.swing.JFrame {
                 adminFrame.setResizable(false);
                 adminFrame.setLocationRelativeTo(null);
                 dispose();
-            }else{
+            } else {
                 Usuario userFrame = new Usuario(this);
                 userFrame.setVisible(true);
                 userFrame.setResizable(false);
                 userFrame.setLocationRelativeTo(null);
-                dispose(); // close the actual login
+                dispose();
             }
         } else {
             JOptionPane.showMessageDialog(this, "Credenciales incorrectas");

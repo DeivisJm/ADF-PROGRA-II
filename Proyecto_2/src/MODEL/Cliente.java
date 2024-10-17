@@ -1,36 +1,30 @@
 package MODEL;
 
-import GUI.Administrador;
-import GUI.Usuario;
 import com.google.gson.annotations.SerializedName;
 
 public class Cliente {
 
     private int id;
 
-    @SerializedName("cedula") // Mapea la clave del JSON a este campo
+    @SerializedName("cedula") // Se Mapea la clave del JSON a este campo
     private String cedula;
 
     private String nombre;
 
-    @SerializedName("primer_apellido") // Mapea la clave del JSON
+    @SerializedName("primer_apellido")
     private String primerApellido;
 
-    @SerializedName("segundo_apellido") // Mapea la clave del JSON
+    @SerializedName("segundo_apellido")
     private String segundoApellido;
 
-    @SerializedName("telefono") // Mapea la clave del JSON
+    @SerializedName("telefono")
     private String telefono;
 
     private String correo;
 
-   
-
-    // Constructor vacío
     public Cliente() {
     }
 
-    // Constructor con parámetros
     public Cliente(int id, String cedula, String nombre, String primerApellido, String segundoApellido, String telefono, String correo) {
         this.id = id;
         this.cedula = cedula;

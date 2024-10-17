@@ -33,13 +33,13 @@ public class Datos {
     public Datos() {
         this.rutaProductos = "productos.json";
     }
-    
+
 
     /* 
      * Este método es para cargar los productos. 
      * Estamos usando una lista para cargar la lista de forma más eficiente.
-     * Usando JSON, leemos el archivo que contiene la rutaProductos 
-     * y con el objeto JSON, agregamos los objetos que tiene el archivo productos.
+     * Usando JSON, se lee el archivo que contiene la rutaProductos 
+     * y con el objeto JSON, agregamos los objetos que tiene el archivo productos
      */
     public List<Producto> cargarProductos(String categoria) {
         ArrayList<Producto> infoProductos = new ArrayList<>();
