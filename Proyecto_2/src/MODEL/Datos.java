@@ -1,5 +1,7 @@
 package MODEL;
 
+import GUI.Administrador;
+import GUI.Usuario;
 import java.io.*;
 import java.util.*;
 import org.json.simple.*;
@@ -9,9 +11,29 @@ public class Datos {
 
     private String rutaProductos;
 
+    private Administrador tico;
+    private Usuario tico2;
+
+    private int id;
+    private String cédula;
+    private String nombre;
+    private String primerApellido;
+    private String segundoApellido;
+    private String teléfono;
+    private String correo;
+
+    public Datos(Administrador tico) {
+        this.tico = tico;
+    }
+
+    public Datos(Usuario tico2) {
+        this.tico2 = tico2;
+    }
+
     public Datos() {
         this.rutaProductos = "productos.json";
     }
+    
 
     /* 
      * Este método es para cargar los productos. 
@@ -36,7 +58,6 @@ public class Datos {
                 String imagen = (String) producto.get("imagen");
                 int cantidad = ((Long) producto.get("cantidad")).intValue();
 
-                
                 infoProductos.add(new Producto(nombre, precio, peso, imagen, cantidad));
             }
 

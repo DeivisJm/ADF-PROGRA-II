@@ -49,37 +49,43 @@ public class ProductoDAO {
         }
     }
 
-    public void actualizarTabla(DefaultTableModel modeloTabla, String subcategoria) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject;
+   public void actualizarTabla(DefaultTableModel modeloTabla, String subcategoria) {
+    try {
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject;
 
-            try (FileReader reader = new FileReader("productos.json")) {
-                jsonObject = (JSONObject) parser.parse(reader);
-            }
-
-            JSONArray subcategoriaArray = (JSONArray) jsonObject.get(subcategoria);
-            if (subcategoriaArray != null) {
-                modeloTabla.setRowCount(0);
-
-                for (Object obj : subcategoriaArray) {
-                    JSONObject productoJSON = (JSONObject) obj;
-                    String id = productoJSON.get("id").toString();
-                    String nombre = productoJSON.get("nombre").toString();
-                    double precio = Double.parseDouble(productoJSON.get("precio").toString());
-                    String peso = productoJSON.get("peso").toString();
-                    String idProveedor = productoJSON.get("id_proveedor").toString();
-                    String idCategoria = productoJSON.get("id_categoria").toString();
-                    String idMarca = productoJSON.get("id_marca").toString();
-                    int cantidad = Integer.parseInt(productoJSON.get("cantidad").toString()); 
-                    
-                    modeloTabla.addRow(new Object[]{id, nombre, precio, peso, idProveedor, idCategoria, idMarca, cantidad});
-                }
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        try (FileReader reader = new FileReader("productos.json")) {
+            jsonObject = (JSONObject) parser.parse(reader);
         }
+
+        // Verifica si la subcategoría existe en el JSON
+        JSONArray subcategoriaArray = (JSONArray) jsonObject.get(subcategoria);
+        if (subcategoriaArray == null) {
+            System.out.println("Subcategoría no encontrada: " + subcategoria);
+            return; // Salir del método si no se encuentra la subcategoría
+        }
+
+        modeloTabla.setRowCount(0); // Limpiar la tabla antes de actualizar
+
+        for (Object obj : subcategoriaArray) {
+            JSONObject productoJSON = (JSONObject) obj;
+            String id = productoJSON.get("id").toString();
+            String nombre = productoJSON.get("nombre").toString();
+            double precio = Double.parseDouble(productoJSON.get("precio").toString());
+            String peso = productoJSON.get("peso").toString();
+            String idProveedor = productoJSON.get("id_proveedor").toString();
+            String idCategoria = productoJSON.get("id_categoria").toString();
+            String idMarca = productoJSON.get("id_marca").toString();
+            int cantidad = Integer.parseInt(productoJSON.get("cantidad").toString());
+
+            // Agregar la fila a la tabla
+            modeloTabla.addRow(new Object[]{id, nombre, precio, peso, idProveedor, idCategoria, idMarca, cantidad});
+        }
+    } catch (IOException | ParseException e) {
+        e.printStackTrace();
     }
+}
+
 
     public void eliminarProducto(String subcategoria, String idProductoAEliminar) {
         try {

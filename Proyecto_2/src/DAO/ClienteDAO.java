@@ -1,12 +1,15 @@
 package DAO;
 
 import MODEL.Cliente;
+import com.google.gson.Gson;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 import javax.swing.table.DefaultTableModel;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
 
 /**
  *
@@ -31,19 +34,19 @@ public class ClienteDAO {
             for (Object obj : clientesArray) {
                 JSONObject clienteJSON = (JSONObject) obj;
                 String cedulaCliente = clienteJSON.get("cedula").toString();
-                if (cedulaCliente.equals(cliente.getCédula())) {
-                    System.out.println("Ya existe un cliente con la cédula " + cliente.getCédula());
+                if (cedulaCliente.equals(cliente.getCedula())) {
+                    System.out.println("Ya existe un cliente con la cédula " + cliente.getCedula());
                     return;
                 }
             }
 
             JSONObject clienteJSON = new JSONObject();
             clienteJSON.put("id", cliente.getId());
-            clienteJSON.put("cedula", cliente.getCédula());
+            clienteJSON.put("cedula", cliente.getCedula());
             clienteJSON.put("nombre", cliente.getNombre());
             clienteJSON.put("primer_apellido", cliente.getPrimerApellido());
             clienteJSON.put("segundo_apellido", cliente.getSegundoApellido());
-            clienteJSON.put("telefono", cliente.getTeléfono());
+            clienteJSON.put("telefono", cliente.getTelefono());
             clienteJSON.put("correo", cliente.getCorreo());
 
             clientesArray.add(clienteJSON);
@@ -172,4 +175,81 @@ public class ClienteDAO {
 
         return idCliente;
     }
+    
+    public void buscarClientePorNombre(String nombreBuscado, JTable tabla) {
+    JSONParser parser = new JSONParser();
+
+    try {
+        // Leer el archivo cliente.json
+        JSONArray clientes = (JSONArray) parser.parse(new FileReader("cliente.json"));
+
+        // Limpiar la tabla antes de agregar el nuevo resultado
+        DefaultTableModel modelo = (DefaultTableModel) tabla.getModel();
+        modelo.setRowCount(0);
+
+        // Buscar el cliente por nombre
+        boolean clienteEncontrado = false;
+        for (Object clienteObj : clientes) {
+            JSONObject cliente = (JSONObject) clienteObj;
+
+            String nombre = (String) cliente.get("nombre");
+
+            if (nombre.equalsIgnoreCase(nombreBuscado)) {
+                clienteEncontrado = true;
+
+                // Si encuentra el cliente, agregarlo a la tabla
+                Object[] fila = new Object[7];  // Ajustar el tamaño según las columnas de la tabla
+                fila[0] = cliente.get("id");  // ID
+                fila[1] = cliente.get("cedula");
+                fila[2] = cliente.get("nombre");
+                fila[3] = cliente.get("primer_apellido");
+                fila[4] = cliente.get("segundo_apellido");
+                fila[5] = cliente.get("telefono");
+                fila[6] = cliente.get("correo");
+
+                modelo.addRow(fila);
+            }
+        }
+
+        // Si no encuentra el cliente
+        if (!clienteEncontrado) {
+            JOptionPane.showMessageDialog(null, "Cliente no encontrado.");
+        }
+
+    } catch (IOException | ParseException e) {
+        e.printStackTrace();
+    }
+}
+    
+    public void cargarTodosLosClientes(JTable tablaClientes) {
+    try {
+        // Leer el archivo JSON
+        Gson gson = new Gson();
+        BufferedReader reader = new BufferedReader(new FileReader("cliente.json"));
+        Cliente[] clientes = gson.fromJson(reader, Cliente[].class);
+
+        // Obtener el modelo de la tabla
+        DefaultTableModel model = (DefaultTableModel) tablaClientes.getModel();
+        model.setRowCount(0); // Limpiar la tabla antes de cargar nuevos datos
+
+        // Añadir cada cliente al modelo de la tabla
+        for (Cliente cliente : clientes) {
+            Object[] fila = {
+                cliente.getId(),
+                cliente.getCedula(),
+                cliente.getNombre(),
+                cliente.getPrimerApellido(),
+                cliente.getSegundoApellido(),
+                cliente.getTelefono(),
+                cliente.getCorreo()
+            };
+            model.addRow(fila);
+        }
+        reader.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+
 }

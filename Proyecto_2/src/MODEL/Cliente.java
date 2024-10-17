@@ -1,38 +1,47 @@
 package MODEL;
 
-import GUI.*;
-
+import GUI.Administrador;
+import GUI.Usuario;
+import com.google.gson.annotations.SerializedName;
 
 public class Cliente {
 
     private int id;
-    private String cédula;
+
+    @SerializedName("cedula") // Mapea la clave del JSON a este campo
+    private String cedula;
+
     private String nombre;
+
+    @SerializedName("primer_apellido") // Mapea la clave del JSON
     private String primerApellido;
+
+    @SerializedName("segundo_apellido") // Mapea la clave del JSON
     private String segundoApellido;
-    private String teléfono;
+
+    @SerializedName("telefono") // Mapea la clave del JSON
+    private String telefono;
+
     private String correo;
-    private Administrador tico;
-    private Usuario tico2;
 
-    public Cliente(Administrador tico) {
-        this.tico = tico;
+   
+
+    // Constructor vacío
+    public Cliente() {
     }
 
-    public Cliente(Usuario tico2) {
-        this.tico2 = tico2;
-    }
-
-    public Cliente(int id, String cédula, String nombre, String primerApellido, String segundoApellido, String teléfono, String correo) {
+    // Constructor con parámetros
+    public Cliente(int id, String cedula, String nombre, String primerApellido, String segundoApellido, String telefono, String correo) {
         this.id = id;
-        this.cédula = cédula;
+        this.cedula = cedula;
         this.nombre = nombre;
         this.primerApellido = primerApellido;
         this.segundoApellido = segundoApellido;
-        this.teléfono = teléfono;
+        this.telefono = telefono;
         this.correo = correo;
     }
 
+    // Getters y Setters
     public int getId() {
         return id;
     }
@@ -41,12 +50,12 @@ public class Cliente {
         this.id = id;
     }
 
-    public String getCédula() {
-        return cédula;
+    public String getCedula() {
+        return cedula;
     }
 
-    public void setCédula(String cédula) {
-        this.cédula = cédula;
+    public void setCedula(String cedula) {
+        this.cedula = cedula;
     }
 
     public String getNombre() {
@@ -73,12 +82,12 @@ public class Cliente {
         this.segundoApellido = segundoApellido;
     }
 
-    public String getTeléfono() {
-        return teléfono;
+    public String getTelefono() {
+        return telefono;
     }
 
-    public void setTeléfono(String teléfono) {
-        this.teléfono = teléfono;
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
     public String getCorreo() {
@@ -88,5 +97,4 @@ public class Cliente {
     public void setCorreo(String correo) {
         this.correo = correo;
     }
-
 }

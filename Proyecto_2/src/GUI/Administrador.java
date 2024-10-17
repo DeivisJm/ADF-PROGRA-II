@@ -1,6 +1,7 @@
 package GUI;
 
 import BO.*;
+import DAO.ClienteDAO;
 import MODEL.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -10,7 +11,7 @@ import org.json.simple.parser.ParseException;
 
 /**
  *
- * @author deivi
+ * @author fabri
  */
 public final class Administrador extends javax.swing.JFrame {
 
@@ -51,7 +52,7 @@ public final class Administrador extends javax.swing.JFrame {
         this.txt2ApellidoCliente.setText("");
         this.txtTelefonoCliente.setText("");
         this.txtCorreoCliente.setText("");
-
+        txtClientes.setText("");
     }
     
     private void limpiarCamposProductos() {
@@ -62,6 +63,7 @@ public final class Administrador extends javax.swing.JFrame {
     txtIDCategoriaProducto.setText("");
     txtIDMarcaProducto.setText("");
     txtCantidad.setText("");
+   
 }
 
 
@@ -123,6 +125,11 @@ public final class Administrador extends javax.swing.JFrame {
         JpClientes = new javax.swing.JPanel();
         scrollClientes = new javax.swing.JScrollPane();
         tblClientes = new javax.swing.JTable();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        txtClientes = new javax.swing.JTextField();
+        btnBuscar = new javax.swing.JButton();
+        btnTodos = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
@@ -236,7 +243,60 @@ public final class Administrador extends javax.swing.JFrame {
         });
         scrollClientes.setViewportView(tblClientes);
 
-        JpClientes.add(scrollClientes, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 80, 1040, 230));
+        JpClientes.add(scrollClientes, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 190, 1040, 230));
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel2.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel2.setFont(new java.awt.Font("Yu Gothic UI Semibold", 3, 18)); // NOI18N
+        jLabel2.setText("Buscar Clientes:");
+
+        btnBuscar.setBackground(new java.awt.Color(0, 153, 0));
+        btnBuscar.setFont(new java.awt.Font("Yu Gothic UI Semibold", 3, 14)); // NOI18N
+        btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarActionPerformed(evt);
+            }
+        });
+
+        btnTodos.setBackground(new java.awt.Color(0, 153, 0));
+        btnTodos.setFont(new java.awt.Font("Yu Gothic UI Semibold", 2, 14)); // NOI18N
+        btnTodos.setText("Ver todos");
+        btnTodos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTodosActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtClientes, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(40, 40, 40)
+                .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnTodos)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(32, 32, 32)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(txtClientes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnTodos, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(38, Short.MAX_VALUE))
+        );
+
+        JpClientes.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 60, 500, -1));
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Cliente"));
 
@@ -419,7 +479,7 @@ public final class Administrador extends javax.swing.JFrame {
                 .addContainerGap(46, Short.MAX_VALUE))
         );
 
-        JpClientes.add(jPanel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 340, 1040, 190));
+        JpClientes.add(jPanel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 450, 1040, 190));
 
         lblImajen1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/Fondos/9ecda51d8c2bad23237e6e63159df01b.jpg"))); // NOI18N
         JpClientes.add(lblImajen1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, -10, 740, 420));
@@ -988,7 +1048,7 @@ public final class Administrador extends javax.swing.JFrame {
             String idMarca = tblProducto.getValueAt(selectedRow, 6).toString();  // Columna 6: ID Marca
             String cantidad = tblProducto.getValueAt(selectedRow, 7).toString(); // Columna 7: Cantidad
 
-            // Llenar los JTextFields con los datos obtenidos
+            
             txtNombreProducto.setText(nombre);
             txtPrecioProducto.setText(precio);
             txtPesoProducto.setText(peso);
@@ -1023,6 +1083,19 @@ public final class Administrador extends javax.swing.JFrame {
 
     }//GEN-LAST:event_tblClientesMouseClicked
 
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+         String nombreBuscado = txtClientes.getText();  // Obtener el nombre del campo de texto
+        ClienteDAO clienteDAO = new ClienteDAO();
+        clienteDAO.buscarClientePorNombre(nombreBuscado, tblClientes); 
+        limpiarCampos();
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void btnTodosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTodosActionPerformed
+        ClienteDAO clienteDAO = new ClienteDAO();
+        clienteDAO.cargarTodosLosClientes(tblClientes);
+        
+    }//GEN-LAST:event_btnTodosActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel JPLinea;
@@ -1030,6 +1103,7 @@ public final class Administrador extends javax.swing.JFrame {
     private javax.swing.JPanel JpClientes;
     private javax.swing.JPanel JpInicio;
     private javax.swing.JPanel JpProductos;
+    private javax.swing.JButton btnBuscar;
     private javax.swing.JButton btnCerrarSesion;
     private javax.swing.JButton btnEditarCliente;
     private javax.swing.JButton btnEditarProducto;
@@ -1037,6 +1111,7 @@ public final class Administrador extends javax.swing.JFrame {
     private javax.swing.JButton btnEliminarProducto;
     private javax.swing.JButton btnGuardarCliente;
     private javax.swing.JButton btnGuardarProducto;
+    private javax.swing.JButton btnTodos;
     private javax.swing.JComboBox<String> comboCategorias;
     private javax.swing.JComboBox<String> comboSubcategorias;
     private javax.swing.JLabel jLabel1;
@@ -1050,8 +1125,10 @@ public final class Administrador extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
@@ -1073,6 +1150,7 @@ public final class Administrador extends javax.swing.JFrame {
     private javax.swing.JTextField txt2ApellidoCliente;
     private javax.swing.JTextField txtCantidad;
     private javax.swing.JTextField txtCedulaCliente;
+    private javax.swing.JTextField txtClientes;
     private javax.swing.JTextField txtCorreoCliente;
     private javax.swing.JTextField txtIDCategoriaProducto;
     private javax.swing.JTextField txtIDMarcaProducto;

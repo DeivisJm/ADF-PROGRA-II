@@ -12,7 +12,7 @@ public class Producto {
     private String idMarca;
     private String peso;
     private String imagen;
-    private int cantidad; // Nueva variable para cantidad
+    private int cantidad; 
     private Administrador tico;
 
     public Producto(Administrador tico) {

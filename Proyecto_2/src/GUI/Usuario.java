@@ -17,7 +17,7 @@ public class Usuario extends javax.swing.JFrame {
     private ProductoBO productoBO;
     private DetalleCompra detallecompra = new DetalleCompra(this);
     private Compra compra = new Compra(this);
-    private Cliente cliente = new Cliente(this);
+    private Datos cliente = new Datos(this);
     private Login login;
     private double subtotal = 0.0;
 
