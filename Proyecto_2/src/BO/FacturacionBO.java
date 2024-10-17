@@ -43,8 +43,8 @@ public class FacturacionBO {
 
     public void TituloFactura(JTextArea Area) {
         String Mostrar = "";
-        Mostrar = "Factura:\n"
-                + "Nombre Cliente:\n"
+        Mostrar = "Factura: 3290223\n"
+                + "Nombre Cliente: Ana\n"
                 + "____________________________________________________________________________________________________________\n"
                 + "Articulo\t\t \n"
                 + "____________________________________________________________________________________________________________\n";

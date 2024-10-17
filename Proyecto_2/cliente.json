@@ -1,26 +1,18 @@
 [{
-        "segundo_apellido": "Rojas",
-        "cedula": 205460396,
-        "correo": "juaroro@gmail.com",
-        "id": 1,
-        "primer_apellido": "Rojas",
-        "telefono": 85745963,
-        "nombre": "Juan"
-    }, {
         "segundo_apellido": "Salas",
-        "cedula": 209930478,
+        "cedula": "209930478",
         "correo": "carosa@gmail.com",
         "id": 2,
         "primer_apellido": "Rodriguez",
-        "telefono": 89635875,
-        "nombre": "Carlos"
+        "telefono": "89635875",
+        "nombre": "kk"
     }, {
         "segundo_apellido": "Arce",
-        "cedula": 302550101,
+        "cedula": "302550101",
         "correo": "anbarce@gmail.com",
         "id": 3,
         "primer_apellido": "Barrantes",
-        "telefono": 63112587,
+        "telefono": "63112587",
         "nombre": "Ana"
     }, {
         "segundo_apellido": "Blanco",
@@ -48,11 +40,11 @@
         "nombre": "Priscilla"
     }, {
         "segundo_apellido": "Villalobos",
-        "cedula": 103210951,
+        "cedula": "103210951",
         "correo": "kaalfavi@gmail.com",
         "id": 7,
         "primer_apellido": "Alfaro",
-        "telefono": 75855210,
+        "telefono": "75855210",
         "nombre": "Katherine"
     }, {
         "segundo_apellido": "Perez",
@@ -78,12 +70,4 @@
         "primer_apellido": "Camacho",
         "telefono": 74855200,
         "nombre": "Belen"
-    }, {
-        "segundo_apellido": "Soto",
-        "cedula": 702230444,
-        "correo": "jumaso@gmail.com",
-        "id": 11,
-        "primer_apellido": "Madrigal",
-        "telefono": 69893001,
-        "nombre": "Julieth"
     }]

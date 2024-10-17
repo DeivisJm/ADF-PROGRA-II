@@ -14,9 +14,9 @@ import org.json.simple.parser.*;
 public class Login extends javax.swing.JFrame {
     //we write the administrators and assign 3 valid passwords for it and with the Arrays.asList we convert the array to a list
     private final String CLIENTES_JSON_FILE = "cliente.json";
-    private final List<String> nombresAdministradores = Arrays.asList("deivis", "Andrew", "Fulano");
-    private final List<String> contraseñasAdministradores = Arrays.asList("admin", "ADMINPASS2", "ADMINPASS3");
-    private final List<String> contraseñasClientes = Arrays.asList("1", "2", "3");
+    private final List<String> nombresAdministradores = Arrays.asList("deivis", "Andrew", "Fabri", "fabri");
+    private final List<String> contraseñasAdministradores = Arrays.asList("admin", "ADMINPASS2", "123", "123");
+    private final List<String> contraseñasClientes = Arrays.asList("1", "2", "3", "4");
 
    
     public Login() {

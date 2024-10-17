@@ -13,12 +13,14 @@ public class Datos {
         this.rutaProductos = "productos.json";
     }
 
-    /*this method id for charging the products and we are using a list for charging the list better
-    using the json we are reading the file that rutaProductos have and with the json object we are adding 
-    the objects that productos file have.
+    /* 
+     * Este método es para cargar los productos. 
+     * Estamos usando una lista para cargar la lista de forma más eficiente.
+     * Usando JSON, leemos el archivo que contiene la rutaProductos 
+     * y con el objeto JSON, agregamos los objetos que tiene el archivo productos.
      */
     public List<Producto> cargarProductos(String categoria) {
-        ArrayList<Producto> infoProductos = new ArrayList();
+        ArrayList<Producto> infoProductos = new ArrayList<>();
 
         JSONParser parser = new JSONParser();
 
@@ -32,13 +34,15 @@ public class Datos {
                 String peso = (String) producto.get("peso");
                 double precio = (double) producto.get("precio");
                 String imagen = (String) producto.get("imagen");
-                infoProductos.add(new Producto(nombre, precio, peso, imagen));
+                int cantidad = ((Long) producto.get("cantidad")).intValue();
+
+                
+                infoProductos.add(new Producto(nombre, precio, peso, imagen, cantidad));
             }
 
         } catch (Exception e) {
             System.out.println(e);
         }
         return infoProductos;
-
     }
 }

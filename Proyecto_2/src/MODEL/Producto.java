@@ -12,13 +12,14 @@ public class Producto {
     private String idMarca;
     private String peso;
     private String imagen;
+    private int cantidad; // Nueva variable para cantidad
     private Administrador tico;
 
     public Producto(Administrador tico) {
         this.tico = tico;
     }
 
-    public Producto(String idProducto, String nombre, double precio, String peso, String idProveedor, String idCategoria, String idMarca, String imagen) {
+    public Producto(String idProducto, String nombre, double precio, String peso, String idProveedor, String idCategoria, String idMarca, String imagen, int cantidad) {
         this.idProducto = idProducto;
         this.nombre = nombre;
         this.precio = precio;
@@ -27,16 +28,18 @@ public class Producto {
         this.idCategoria = idCategoria;
         this.idMarca = idMarca;
         this.imagen = imagen;
+        this.cantidad = cantidad; // Inicializa la cantidad
     }
 
-    public Producto(String nombre, double precio, String peso, String imagen) {
+    public Producto(String nombre, double precio, String peso, String imagen, int cantidad) {
         this.nombre = nombre;
         this.precio = precio;
         this.peso = peso;
         this.imagen = imagen;
+        this.cantidad = cantidad; // Inicializa la cantidad
     }
 
-    public Producto(String idProducto, String nombre, double precio, String peso, String idProveedor, String idCategoria, String idMarca) {
+    public Producto(String idProducto, String nombre, double precio, String peso, String idProveedor, String idCategoria, String idMarca, int cantidad) {
         this.idProducto = idProducto;
         this.nombre = nombre;
         this.precio = precio;
@@ -44,6 +47,7 @@ public class Producto {
         this.idProveedor = idProveedor;
         this.idCategoria = idCategoria;
         this.idMarca = idMarca;
+        this.cantidad = cantidad;
     }
 
     public Producto(String nombre, double precio, String peso, String idProveedor, String idCategoria, String idMarca) {
@@ -63,6 +67,7 @@ public class Producto {
         this.idCategoria = "";
         this.idMarca = "";
         this.peso = "";
+        this.cantidad = 0; // Inicializa la cantidad por defecto
     }
 
     public String getNombre() {
@@ -101,7 +106,7 @@ public class Producto {
         return idProducto;
     }
 
-    public void setIdProducto() {
+    public void setIdProducto(String idProducto) {
         this.idProducto = idProducto;
     }
 
@@ -129,4 +134,11 @@ public class Producto {
         this.idMarca = idMarca;
     }
 
+    public int getCantidad() { // Método getter para cantidad
+        return cantidad;
+    }
+
+    public void setCantidad(int cantidad) { // Método setter para cantidad
+        this.cantidad = cantidad;
+    }
 }

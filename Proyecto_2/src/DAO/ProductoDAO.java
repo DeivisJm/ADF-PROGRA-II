@@ -37,6 +37,7 @@ public class ProductoDAO {
             productoJSON.put("id_proveedor", producto.getIdProveedor());
             productoJSON.put("id_categoria", producto.getIdCategoria());
             productoJSON.put("id_marca", producto.getIdMarca());
+            productoJSON.put("cantidad", producto.getCantidad()); 
 
             subcategoriaArray.add(productoJSON);
 
@@ -70,8 +71,9 @@ public class ProductoDAO {
                     String idProveedor = productoJSON.get("id_proveedor").toString();
                     String idCategoria = productoJSON.get("id_categoria").toString();
                     String idMarca = productoJSON.get("id_marca").toString();
-
-                    modeloTabla.addRow(new Object[]{id, nombre, precio, peso, idProveedor, idCategoria, idMarca});
+                    int cantidad = Integer.parseInt(productoJSON.get("cantidad").toString()); 
+                    
+                    modeloTabla.addRow(new Object[]{id, nombre, precio, peso, idProveedor, idCategoria, idMarca, cantidad});
                 }
             }
         } catch (IOException | ParseException e) {
@@ -142,6 +144,9 @@ public class ProductoDAO {
                     }
                     if (!producto.getIdMarca().isEmpty()) {
                         productoJSON.put("id_marca", producto.getIdMarca());
+                    }
+                    if (producto.getCantidad() >= 0) { 
+                        productoJSON.put("cantidad", producto.getCantidad());
                     }
                     break;
                 }
