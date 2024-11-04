@@ -1,6 +1,10 @@
 package GUI;
 
-import MODEL.Producto;
+import ENTITY.Producto;
+/**
+ *
+ * @author andrew
+ */
 
 public class ProductoPanel extends javax.swing.JPanel {
 

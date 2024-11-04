@@ -1,7 +1,7 @@
 package BO;
 
 import DAO.DetalleCompraDAO;
-import MODEL.DetalleCompra;
+import ENTITY.DetalleCompra;
 import javax.swing.table.DefaultTableModel;
 
 /**

@@ -1,8 +1,8 @@
-package MODEL;
+package ENTITY;
 
 /**
  *
- * @author deivi
+ * @author andrew
  */
 public class Categoria {
 

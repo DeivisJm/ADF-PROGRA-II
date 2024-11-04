@@ -1,7 +1,7 @@
 package BO;
 
 import DAO.ClienteDAO;
-import MODEL.Cliente;
+import ENTITY.Cliente;
 import java.io.IOException;
 import javax.swing.table.DefaultTableModel;
 import org.json.simple.parser.ParseException;

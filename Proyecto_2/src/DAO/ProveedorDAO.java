@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.json.simple.*;
 import org.json.simple.parser.*;
-import MODEL.Proveedor;
+import ENTITY.Proveedor;
 
 /**
  *
- * @author deivi
+ * @author fabri
  */
 public class ProveedorDAO {
 

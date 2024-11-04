@@ -1,6 +1,10 @@
-package MODEL;
+package ENTITY;
 
 import GUI.Administrador;
+/**
+ *
+ * @author andrew
+ */
 
 public class Proveedor {
 

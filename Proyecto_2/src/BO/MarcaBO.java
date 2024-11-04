@@ -1,12 +1,12 @@
 package BO;
 
 import DAO.MarcaDAO;
-import MODEL.Marca;
+import ENTITY.Marca;
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
- * @author deivi
+ * @author fabri
  */
 public class MarcaBO {
 

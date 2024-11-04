@@ -1,14 +1,14 @@
 package BO;
 
 import DAO.CompraDAO;
-import MODEL.Compra;
+import ENTITY.Compra;
 import java.io.IOException;
 import javax.swing.table.DefaultTableModel;
 import org.json.simple.parser.ParseException;
 
 /**
  *
- * @author deivi
+ * @author andrew
  */
 public class CompraBO {
 

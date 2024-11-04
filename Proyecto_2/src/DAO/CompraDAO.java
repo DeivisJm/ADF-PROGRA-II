@@ -1,6 +1,6 @@
 package DAO;
 
-import MODEL.Compra;
+import ENTITY.Compra;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 import javax.swing.table.DefaultTableModel;

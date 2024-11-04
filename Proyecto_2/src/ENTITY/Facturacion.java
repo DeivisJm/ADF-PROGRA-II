@@ -1,6 +1,11 @@
-package MODEL;
+package ENTITY;
 
 import GUI.*;
+
+/**
+ *
+ * @author andrew
+ */
 
 public class Facturacion {
 

@@ -1,6 +1,6 @@
 package BO;
 
-import MODEL.Facturacion;
+import ENTITY.Facturacion;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 

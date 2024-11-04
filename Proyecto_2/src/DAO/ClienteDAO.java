@@ -1,255 +1,165 @@
 package DAO;
 
-import MODEL.Cliente;
-import com.google.gson.Gson;
-import org.json.simple.*;
-import org.json.simple.parser.*;
+import ENTITY.Cliente;
+import java.sql.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
-/**
- *
- * @author deivi
- */
 public class ClienteDAO {
 
+    private Connection connection;
+
+    public ClienteDAO() {
+        connection = new DB().getConnection(); // Asegúrate de que la conexión se inicializa aquí
+    }
+// Asegúrate de que la conexión se inicializa aquí
+
     public void guardarCliente(Cliente cliente) {
-        try {
-            File archivoJSON = new File("cliente.json");
-            if (!archivoJSON.exists()) {
-                archivoJSON.createNewFile();
-                JSONArray clientesArrayVacio = new JSONArray();
-                try (FileWriter fileWriter = new FileWriter(archivoJSON)) {
-                    fileWriter.write(clientesArrayVacio.toJSONString());
-                }
-            }
+        String sql = "INSERT INTO clientes (cedula, nombre, primer_apellido, segundo_apellido, telefono, correo) VALUES (?, ?, ?, ?, ?, ?)";
 
-            JSONParser parser = new JSONParser();
-            JSONArray clientesArray = (JSONArray) parser.parse(new FileReader(archivoJSON));
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, cliente.getCedula());
+            preparedStatement.setString(2, cliente.getNombre());
+            preparedStatement.setString(3, cliente.getPrimerApellido());
+            preparedStatement.setString(4, cliente.getSegundoApellido());
+            preparedStatement.setString(5, cliente.getTelefono());
+            preparedStatement.setString(6, cliente.getCorreo());
 
-            for (Object obj : clientesArray) {
-                JSONObject clienteJSON = (JSONObject) obj;
-                String cedulaCliente = clienteJSON.get("cedula").toString();
-                if (cedulaCliente.equals(cliente.getCedula())) {
-                    System.out.println("Ya existe un cliente con la cédula " + cliente.getCedula());
-                    return;
-                }
-            }
-
-            JSONObject clienteJSON = new JSONObject();
-            clienteJSON.put("id", cliente.getId());
-            clienteJSON.put("cedula", cliente.getCedula());
-            clienteJSON.put("nombre", cliente.getNombre());
-            clienteJSON.put("primer_apellido", cliente.getPrimerApellido());
-            clienteJSON.put("segundo_apellido", cliente.getSegundoApellido());
-            clienteJSON.put("telefono", cliente.getTelefono());
-            clienteJSON.put("correo", cliente.getCorreo());
-
-            clientesArray.add(clienteJSON);
-
-            try (FileWriter fileWriter = new FileWriter("cliente.json")) {
-                fileWriter.write(clientesArray.toJSONString());
-            }
-        } catch (IOException | ParseException e) {
+            preparedStatement.executeUpdate();
+            System.out.println("Cliente guardado exitosamente.");
+        } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al guardar el cliente: " + e.getMessage());
         }
     }
 
     public void actualizarTabla(DefaultTableModel modeloTabla) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray clientesArray = (JSONArray) parser.parse(new FileReader("cliente.json"));
+        String sql = "SELECT * FROM clientes";
 
-            modeloTabla.setRowCount(0);
+        try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(sql)) {
+            modeloTabla.setRowCount(0); // Limpiar la tabla
 
-            for (Object obj : clientesArray) {
-                JSONObject clienteJSON = (JSONObject) obj;
-                int id = Integer.parseInt(clienteJSON.get("id").toString());
-                String cedula = clienteJSON.get("cedula") != null ? clienteJSON.get("cedula").toString() : "";
-                String nombre = clienteJSON.get("nombre") != null ? clienteJSON.get("nombre").toString() : "";
-                String primerApellido = clienteJSON.get("primer_apellido") != null ? clienteJSON.get("primer_apellido").toString() : "";
-                String segundoApellido = clienteJSON.get("segundo_apellido") != null ? clienteJSON.get("segundo_apellido").toString() : "";
-                String telefono = clienteJSON.get("telefono") != null ? clienteJSON.get("telefono").toString() : "";
-                String correo = clienteJSON.get("correo") != null ? clienteJSON.get("correo").toString() : "";
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id_cliente");
+                String cedula = resultSet.getString("cedula");
+                String nombre = resultSet.getString("nombre");
+                String primerApellido = resultSet.getString("primer_apellido");
+                String segundoApellido = resultSet.getString("segundo_apellido");
+                String telefono = resultSet.getString("telefono");
+                String correo = resultSet.getString("correo");
+
                 modeloTabla.addRow(new Object[]{id, cedula, nombre, primerApellido, segundoApellido, telefono, correo});
             }
-        } catch (IOException | ParseException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void editarCliente(int id, String cedula, String nombre, String primerApellido, String segundoApellido, String telefono, String correo) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray clientesArray = (JSONArray) parser.parse(new FileReader("cliente.json"));
-            boolean clienteEncontrado = false;
+        String sql = "UPDATE clientes SET cedula = ?, nombre = ?, primer_apellido = ?, segundo_apellido = ?, telefono = ?, correo = ? WHERE id_cliente = ?";
 
-            for (Object obj : clientesArray) {
-                JSONObject clienteJSON = (JSONObject) obj;
-                int clienteId = Integer.parseInt(clienteJSON.get("id").toString());
-                if (clienteId == id) {
-                    if (!cedula.isEmpty()) {
-                        clienteJSON.put("cedula", cedula);
-                    }
-                    if (!nombre.isEmpty()) {
-                        clienteJSON.put("nombre", nombre);
-                    }
-                    if (!primerApellido.isEmpty()) {
-                        clienteJSON.put("primer_apellido", primerApellido);
-                    }
-                    if (!segundoApellido.isEmpty()) {
-                        clienteJSON.put("segundo_apellido", segundoApellido);
-                    }
-                    if (!telefono.isEmpty()) {
-                        clienteJSON.put("telefono", telefono);
-                    }
-                    if (!correo.isEmpty()) {
-                        clienteJSON.put("correo", correo);
-                    }
-                    clienteEncontrado = true;
-                    break;
-                }
-            }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, cedula);
+            preparedStatement.setString(2, nombre);
+            preparedStatement.setString(3, primerApellido);
+            preparedStatement.setString(4, segundoApellido);
+            preparedStatement.setString(5, telefono);
+            preparedStatement.setString(6, correo);
+            preparedStatement.setInt(7, id);
 
-            if (clienteEncontrado) {
-                try (FileWriter fileWriter = new FileWriter("cliente.json")) {
-                    fileWriter.write(clientesArray.toJSONString());
-                }
-            }
-        } catch (IOException | ParseException e) {
+            preparedStatement.executeUpdate();
+            System.out.println("Cliente actualizado exitosamente.");
+        } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al actualizar el cliente: " + e.getMessage());
         }
     }
 
     public void eliminarCliente(int id) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray clientesArray = (JSONArray) parser.parse(new FileReader("cliente.json"));
+        String sql = "DELETE FROM clientes WHERE id_cliente = ?";
 
-            List<Integer> indicesAEliminar = new ArrayList<>();
-            boolean clienteEncontrado = false;
-
-            for (int i = 0; i < clientesArray.size(); i++) {
-                JSONObject clienteJSON = (JSONObject) clientesArray.get(i);
-                int clienteId = Integer.parseInt(clienteJSON.get("id").toString());
-                if (clienteId == id) {
-                    indicesAEliminar.add(i);
-                    clienteEncontrado = true;
-                }
-            }
-
-            if (clienteEncontrado) {
-                for (int i : indicesAEliminar) {
-                    clientesArray.remove(i);
-                }
-
-                try (FileWriter fileWriter = new FileWriter("cliente.json")) {
-                    fileWriter.write(clientesArray.toJSONString());
-                }
-            }
-        } catch (IOException | ParseException e) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, id);
+            preparedStatement.executeUpdate();
+            System.out.println("Cliente eliminado exitosamente.");
+        } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al eliminar el cliente: " + e.getMessage());
         }
     }
 
-    public int obtenerIdClientePorNombre(String nombreCliente) throws IOException, ParseException {
-        JSONParser parser = new JSONParser();
+    public int obtenerIdClientePorNombre(String nombreCliente) {
+        String sql = "SELECT id_cliente FROM clientes WHERE nombre = ?";
         int idCliente = -1;
 
-        try (FileReader reader = new FileReader("cliente.json")) {
-            JSONArray clientesArray = (JSONArray) parser.parse(reader);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, nombreCliente);
+            ResultSet resultSet = preparedStatement.executeQuery();
 
-            for (Object obj : clientesArray) {
-                JSONObject cliente = (JSONObject) obj;
-                String nombre = (String) cliente.get("nombre");
-                if (nombreCliente.equals(nombre)) {
-                    idCliente = Integer.parseInt(cliente.get("id").toString());
-                    break;
-                }
+            if (resultSet.next()) {
+                idCliente = resultSet.getInt("id_cliente");
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         return idCliente;
     }
-    
+
     public void buscarClientePorNombre(String nombreBuscado, JTable tabla) {
-    JSONParser parser = new JSONParser();
+        String sql = "SELECT * FROM clientes WHERE nombre LIKE ?";
 
-    try {
-        // Leer el archivo cliente.json
-        JSONArray clientes = (JSONArray) parser.parse(new FileReader("cliente.json"));
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, "%" + nombreBuscado + "%");
+            ResultSet resultSet = preparedStatement.executeQuery();
 
-        // Limpiar la tabla antes de agregar el nuevo resultado
-        DefaultTableModel modelo = (DefaultTableModel) tabla.getModel();
-        modelo.setRowCount(0);
+            DefaultTableModel modelo = (DefaultTableModel) tabla.getModel();
+            modelo.setRowCount(0); // Limpiar la tabla
 
-        // Buscar el cliente por nombre
-        boolean clienteEncontrado = false;
-        for (Object clienteObj : clientes) {
-            JSONObject cliente = (JSONObject) clienteObj;
-
-            String nombre = (String) cliente.get("nombre");
-
-            if (nombre.equalsIgnoreCase(nombreBuscado)) {
+            boolean clienteEncontrado = false;
+            while (resultSet.next()) {
                 clienteEncontrado = true;
-
-                // Si encuentra el cliente, agregarlo a la tabla
-                Object[] fila = new Object[7];  // Ajustar el tamaño según las columnas de la tabla
-                fila[0] = cliente.get("id");  // ID
-                fila[1] = cliente.get("cedula");
-                fila[2] = cliente.get("nombre");
-                fila[3] = cliente.get("primer_apellido");
-                fila[4] = cliente.get("segundo_apellido");
-                fila[5] = cliente.get("telefono");
-                fila[6] = cliente.get("correo");
-
+                Object[] fila = new Object[7]; // Ajustar el tamaño según las columnas de la tabla
+                fila[0] = resultSet.getInt("id_cliente");  // ID
+                fila[1] = resultSet.getString("cedula");
+                fila[2] = resultSet.getString("nombre");
+                fila[3] = resultSet.getString("primer_apellido");
+                fila[4] = resultSet.getString("segundo_apellido");
+                fila[5] = resultSet.getString("telefono");
+                fila[6] = resultSet.getString("correo");
                 modelo.addRow(fila);
             }
-        }
 
-        // Si no encuentra el cliente
-        if (!clienteEncontrado) {
-            JOptionPane.showMessageDialog(null, "Cliente no encontrado.");
+            if (!clienteEncontrado) {
+                JOptionPane.showMessageDialog(null, "Cliente no encontrado.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
-    } catch (IOException | ParseException e) {
-        e.printStackTrace();
     }
-}
-    
+
     public void cargarTodosLosClientes(JTable tablaClientes) {
-    try {
-        // Leer el archivo JSON
-        Gson gson = new Gson();
-        BufferedReader reader = new BufferedReader(new FileReader("cliente.json"));
-        Cliente[] clientes = gson.fromJson(reader, Cliente[].class);
+        String sql = "SELECT * FROM clientes";
 
-        // Obtener el modelo de la tabla
-        DefaultTableModel model = (DefaultTableModel) tablaClientes.getModel();
-        model.setRowCount(0); // Limpiar la tabla antes de cargar nuevos datos
+        try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(sql)) {
+            DefaultTableModel model = (DefaultTableModel) tablaClientes.getModel();
+            model.setRowCount(0); // Limpiar la tabla antes de cargar nuevos datos
 
-        // Añadir cada cliente al modelo de la tabla
-        for (Cliente cliente : clientes) {
-            Object[] fila = {
-                cliente.getId(),
-                cliente.getCedula(),
-                cliente.getNombre(),
-                cliente.getPrimerApellido(),
-                cliente.getSegundoApellido(),
-                cliente.getTelefono(),
-                cliente.getCorreo()
-            };
-            model.addRow(fila);
+            while (resultSet.next()) {
+                Object[] fila = {
+                    resultSet.getInt("id_cliente"),
+                    resultSet.getString("cedula"),
+                    resultSet.getString("nombre"),
+                    resultSet.getString("primer_apellido"),
+                    resultSet.getString("segundo_apellido"),
+                    resultSet.getString("telefono"),
+                    resultSet.getString("correo")
+                };
+                model.addRow(fila);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        reader.close();
-    } catch (Exception e) {
-        e.printStackTrace();
     }
-}
-
-
 }

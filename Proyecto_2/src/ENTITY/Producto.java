@@ -1,6 +1,11 @@
-package MODEL;
+package ENTITY;
 
 import GUI.*;
+
+/**
+ *
+ * @author fabri
+ */
 
 public class Producto {
 
@@ -12,7 +17,7 @@ public class Producto {
     private String idMarca;
     private String peso;
     private String imagen;
-    private int cantidad; 
+    private int cantidad;
     private Administrador tico;
 
     public Producto(Administrador tico) {
@@ -28,7 +33,7 @@ public class Producto {
         this.idCategoria = idCategoria;
         this.idMarca = idMarca;
         this.imagen = imagen;
-        this.cantidad = cantidad; 
+        this.cantidad = cantidad;
     }
 
     public Producto(String nombre, double precio, String peso, String imagen, int cantidad) {
@@ -36,7 +41,7 @@ public class Producto {
         this.precio = precio;
         this.peso = peso;
         this.imagen = imagen;
-        this.cantidad = cantidad; 
+        this.cantidad = cantidad;
     }
 
     public Producto(String idProducto, String nombre, double precio, String peso, String idProveedor, String idCategoria, String idMarca, int cantidad) {
@@ -67,7 +72,7 @@ public class Producto {
         this.idCategoria = "";
         this.idMarca = "";
         this.peso = "";
-        this.cantidad = 0; 
+        this.cantidad = 0;
     }
 
     public String getNombre() {
@@ -134,11 +139,11 @@ public class Producto {
         this.idMarca = idMarca;
     }
 
-    public int getCantidad() { 
+    public int getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(int cantidad) { 
+    public void setCantidad(int cantidad) {
         this.cantidad = cantidad;
     }
 }

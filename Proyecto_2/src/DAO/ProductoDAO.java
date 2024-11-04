@@ -1,6 +1,6 @@
 package DAO;
 
-import MODEL.Producto;
+import ENTITY.Producto;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 import javax.swing.table.DefaultTableModel;
@@ -62,7 +62,7 @@ public class ProductoDAO {
             JSONArray subcategoriaArray = (JSONArray) jsonObject.get(subcategoria);
             if (subcategoriaArray == null) {
                 System.out.println("Subcategoría no encontrada: " + subcategoria);
-                return; // Salir del método si no se encuentra la subcategoría
+                return; 
             }
 
             modeloTabla.setRowCount(0); // Limpiar la tabla antes de actualizar

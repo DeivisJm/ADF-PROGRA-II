@@ -1,4 +1,4 @@
-package MODEL;
+package ENTITY;
 
 import GUI.Administrador;
 import GUI.Usuario;
@@ -6,6 +6,11 @@ import java.io.*;
 import java.util.*;
 import org.json.simple.*;
 import org.json.simple.parser.*;
+
+/**
+ *
+ * @author deivi
+ */
 
 public class Datos {
 

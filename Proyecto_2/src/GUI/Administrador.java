@@ -1,8 +1,9 @@
 package GUI;
 
+import ENTITY.Producto;
+import ENTITY.Cliente;
 import BO.*;
 import DAO.ClienteDAO;
-import MODEL.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import javax.swing.*;
@@ -44,6 +45,7 @@ public final class Administrador extends javax.swing.JFrame {
         }
         return false;
     }
+    
 
     private void limpiarCampos() {
         this.txtCedulaCliente.setText("");

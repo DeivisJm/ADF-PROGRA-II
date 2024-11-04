@@ -1,7 +1,7 @@
 package BO;
 
 import DAO.ProductoDAO;
-import MODEL.Producto;
+import ENTITY.Producto;
 import javax.swing.table.DefaultTableModel;
 
 /**

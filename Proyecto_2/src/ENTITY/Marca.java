@@ -1,6 +1,11 @@
-package MODEL;
+package ENTITY;
 
 import GUI.*;
+
+/**
+ *
+ * @author fabri
+ */
 
 public class Marca {
 

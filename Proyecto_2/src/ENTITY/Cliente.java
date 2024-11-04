@@ -1,6 +1,11 @@
-package MODEL;
+package ENTITY;
 
 import com.google.gson.annotations.SerializedName;
+
+/**
+ *
+ * @author deivi
+ */
 
 public class Cliente {
 

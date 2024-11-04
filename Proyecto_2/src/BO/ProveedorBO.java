@@ -1,7 +1,7 @@
 package BO;
 
 import DAO.ProveedorDAO;
-import MODEL.Proveedor;
+import ENTITY.Proveedor;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 import java.io.*;
@@ -9,7 +9,7 @@ import javax.swing.table.DefaultTableModel;
 
 /**
  *
- * @author deivi
+ * @author andrew
  */
 public class ProveedorBO {
 

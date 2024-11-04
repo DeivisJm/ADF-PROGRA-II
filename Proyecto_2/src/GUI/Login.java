@@ -1,10 +1,11 @@
 package GUI;
 
-import java.io.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
 import javax.swing.*;
-import org.json.simple.*;
-import org.json.simple.parser.*;
+import DAO.DB;
 
 /**
  *
@@ -12,47 +13,46 @@ import org.json.simple.parser.*;
  */
 public class Login extends javax.swing.JFrame {
 
-    //Admins, hay 3 contrasenas  y con el Arrays.asList convertimos el array a una lista
-    private final String CLIENTES_JSON_FILE = "cliente.json";
-    private final List<String> nombresAdministradores = Arrays.asList("deivis", "Andrew", "Fabri", "fabri");
-    private final List<String> contraseñasAdministradores = Arrays.asList("admin", "ADMINPASS2", "123", "123");
-    private final List<String> contraseñasClientes = Arrays.asList("1", "2", "3", "4");
-
     public Login() {
         initComponents();
         setResizable(false);
         setLocationRelativeTo(null);
     }
 
-    private boolean verificarCredenciales(String username, String password) {
-        if (contraseñasAdministradores.contains(password) && nombresAdministradores.contains(username)) {
-            return true;
-        }
+    private int obtenerRolId(String username, String password) {
+        int rolId = -1; // Valor por defecto para indicar que no se encontró
 
-        if (contraseñasClientes.contains(password)) {
-            JSONParser parser = new JSONParser();
-            //Se lee el Json
-            try (FileReader reader = new FileReader(CLIENTES_JSON_FILE)) {
-                JSONArray clientesArray = (JSONArray) parser.parse(reader);
-                //Se crea un objeto Json con un array donde agarra el nombre del cliente
-                for (Object obj : clientesArray) {
-                    JSONObject cliente = (JSONObject) obj;
-                    String jsonUsername = (String) cliente.get("nombre");
+        // Conectar a la base de datos
+        try (Connection connection = new DB().getConnection()) {
+            // Consulta SQL para obtener el rol del administrador
+            String queryAdmin = "SELECT id_rol FROM administradores WHERE nombre = ? AND contraseña = ?";
+            PreparedStatement pstmtAdmin = connection.prepareStatement(queryAdmin);
+            pstmtAdmin.setString(1, username);
+            pstmtAdmin.setString(2, password);
 
-                    if (username.equals(jsonUsername)) {
-                        return true; // Las credenciales son válidas para los clientes
-                    }
+            ResultSet rsAdmin = pstmtAdmin.executeQuery();
+
+            // Si hay resultados, obtenemos el rol_id
+            if (rsAdmin.next()) {
+                rolId = rsAdmin.getInt("id_rol");
+            } else {
+                // Si no se encuentra en administradores, se busca en clientes
+                String queryCliente = "SELECT id_rol FROM clientes WHERE nombre = ? AND contraseña = ?";
+                PreparedStatement pstmtCliente = connection.prepareStatement(queryCliente);
+                pstmtCliente.setString(1, username);
+                pstmtCliente.setString(2, password);
+
+                ResultSet rsCliente = pstmtCliente.executeQuery();
+
+                // Si hay resultados, obtenemos el rol_id
+                if (rsCliente.next()) {
+                    rolId = rsCliente.getInt("id_rol");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace(); // Manejar excepciones de manera adecuada
         }
-
-        return false; // Las credenciales no son válidas
-    }
-
-    public String getNombreUsuario() {
-        return txtUsuario.getText();
+        return rolId; // Devuelve el rol_id o -1 si no se encontró
     }
 
     @SuppressWarnings("unchecked")
@@ -173,25 +173,29 @@ public class Login extends javax.swing.JFrame {
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         String username = txtUsuario.getText();
-        String password = txtContraseña.getText();
-        //   Verificamops is es admin o usuario
-        if (verificarCredenciales(username, password)) {
-            if (contraseñasAdministradores.contains(password)) {
-                Administrador adminFrame = new Administrador();
-                adminFrame.setVisible(true);
-                adminFrame.setResizable(false);
-                adminFrame.setLocationRelativeTo(null);
-                dispose();
-            } else {
-                Usuario userFrame = new Usuario(this);
-                userFrame.setVisible(true);
-                userFrame.setResizable(false);
-                userFrame.setLocationRelativeTo(null);
-                dispose();
-            }
+        String password = new String(txtContraseña.getPassword());
+
+        // Verificar el rol del usuario
+        int rolId = obtenerRolId(username, password);
+
+        if (rolId == 1) { // Si es administrador
+            JOptionPane.showMessageDialog(this, "Bienvenido Administrador " + username + "!");
+            Administrador adminFrame = new Administrador();
+            adminFrame.setVisible(true);
+            adminFrame.setResizable(false);
+            adminFrame.setLocationRelativeTo(null);
+            dispose(); // Cierra la ventana de login
+        } else if (rolId == 2) { // Si es cliente
+            JOptionPane.showMessageDialog(this, "Bienvenido " + username + "!");
+            Usuario userFrame = new Usuario(this);
+            userFrame.setVisible(true);
+            userFrame.setResizable(false);
+            userFrame.setLocationRelativeTo(null);
+            dispose(); // Cierra la ventana de login
         } else {
             JOptionPane.showMessageDialog(this, "Credenciales incorrectas");
         }
+
     }//GEN-LAST:event_btnLoginActionPerformed
 
 

@@ -1,7 +1,11 @@
 package GUI;
 
+import ENTITY.Producto;
+import ENTITY.Facturacion;
+import ENTITY.Compra;
+import ENTITY.Datos;
+import ENTITY.DetalleCompra;
 import BO.*;
-import MODEL.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;

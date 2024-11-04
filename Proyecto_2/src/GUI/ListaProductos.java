@@ -1,6 +1,6 @@
 package GUI;
 
-import MODEL.Producto;
+import ENTITY.Producto;
 import java.awt.GridLayout;
 import java.util.List;
 import javax.swing.JPanel;

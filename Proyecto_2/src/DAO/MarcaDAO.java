@@ -1,6 +1,6 @@
 package DAO;
 
-import MODEL.Marca;
+import ENTITY.Marca;
 import org.json.simple.*;
 import org.json.simple.parser.*;
 import javax.swing.table.DefaultTableModel;
@@ -8,7 +8,7 @@ import java.io.*;
 
 /**
  *
- * @author deivi
+ * @author andrew
  */
 public class MarcaDAO {
 
