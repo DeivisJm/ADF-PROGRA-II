@@ -16,18 +16,32 @@ public class ClienteDAO {
 // Asegúrate de que la conexión se inicializa aquí
 
     public void guardarCliente(Cliente cliente) {
+        String verificarSql = "SELECT COUNT(*) FROM clientes WHERE cedula = ?";
         String sql = "INSERT INTO clientes (cedula, nombre, primer_apellido, segundo_apellido, telefono, correo) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, cliente.getCedula());
-            preparedStatement.setString(2, cliente.getNombre());
-            preparedStatement.setString(3, cliente.getPrimerApellido());
-            preparedStatement.setString(4, cliente.getSegundoApellido());
-            preparedStatement.setString(5, cliente.getTelefono());
-            preparedStatement.setString(6, cliente.getCorreo());
+        try (PreparedStatement verificarStmt = connection.prepareStatement(verificarSql)) {
+            // Verificar si la cédula ya existe en la base de datos
+            verificarStmt.setString(1, cliente.getCedula());
+            ResultSet resultSet = verificarStmt.executeQuery();
+            resultSet.next();
+            int count = resultSet.getInt(1);
 
-            preparedStatement.executeUpdate();
-            System.out.println("Cliente guardado exitosamente.");
+            if (count > 0) {
+                JOptionPane.showMessageDialog(null, "El cliente con la cédula " + cliente.getCedula() + " ya existe.");
+                return; // Termina el método para evitar la inserción de un cliente duplicado
+            }
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, cliente.getCedula());
+                preparedStatement.setString(2, cliente.getNombre());
+                preparedStatement.setString(3, cliente.getPrimerApellido());
+                preparedStatement.setString(4, cliente.getSegundoApellido());
+                preparedStatement.setString(5, cliente.getTelefono());
+                preparedStatement.setString(6, cliente.getCorreo());
+
+                preparedStatement.executeUpdate();
+                System.out.println("Cliente guardado exitosamente.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error al guardar el cliente: " + e.getMessage());
