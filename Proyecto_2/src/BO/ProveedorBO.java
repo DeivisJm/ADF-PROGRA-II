@@ -2,9 +2,7 @@ package BO;
 
 import DAO.ProveedorDAO;
 import ENTITY.Proveedor;
-import org.json.simple.*;
-import org.json.simple.parser.*;
-import java.io.*;
+import java.util.List;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -15,79 +13,62 @@ public class ProveedorBO {
 
     private ProveedorDAO proveedorDAO = new ProveedorDAO();
 
-    public void guardarProveedor(Proveedor proveedor) throws IOException, ParseException {
-        JSONArray proveedorArray = proveedorDAO.leerProveedores();
+    public void guardarProveedor(Proveedor proveedor) {
+        // Verifica si ya existe un proveedor con la misma cédula en la base de datos
+        List<Proveedor> proveedores = proveedorDAO.leerProveedores();
 
-        for (Object obj : proveedorArray) {
-            JSONObject proveedorJSON = (JSONObject) obj;
-            String cedulaProveedor = proveedorJSON.get("cedula").toString();
-            if (cedulaProveedor.equals(proveedor.getCedulaJuridica())) {
+        for (Proveedor p : proveedores) {
+            if (p.getCedulaJuridica().equals(proveedor.getCedulaJuridica())) {
                 System.out.println("Ya existe un cliente con la cédula " + proveedor.getCedulaJuridica());
                 return;
             }
         }
 
+        // Guarda el proveedor en la base de datos
         proveedorDAO.guardarProveedor(proveedor);
     }
 
     public void actualizarTabla(DefaultTableModel modeloTabla) {
-        try {
-            // Obtener la lista de proveedores desde el DAO
-            JSONArray proveedoresArray = proveedorDAO.leerProveedores();
+        // Obtener la lista de proveedores desde el DAO
+        List<Proveedor> proveedores = proveedorDAO.leerProveedores();
 
-            // Limpiar la tabla antes de agregar los nuevos datos
-            modeloTabla.setRowCount(0);
+        // Limpiar la tabla antes de agregar los nuevos datos
+        modeloTabla.setRowCount(0);
 
-            // Agregar los proveedores al modelo de la tabla
-            for (Object obj : proveedoresArray) {
-                JSONObject proveedorJSON = (JSONObject) obj;
-                int id = Integer.parseInt(proveedorJSON.get("id").toString());
-                String cedula = proveedorJSON.get("cedula").toString();
-                String nombre = proveedorJSON.get("nombre").toString();
-                String telefono = proveedorJSON.get("telefono").toString();
-                String correo = proveedorJSON.get("correo").toString();
-                modeloTabla.addRow(new Object[]{id, cedula, nombre, telefono, correo});
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace(); // Manejar las excepciones adecuadamente
+        // Agregar los proveedores al modelo de la tabla
+        for (Proveedor proveedor : proveedores) {
+            modeloTabla.addRow(new Object[]{
+                proveedor.getId(),
+                proveedor.getCedulaJuridica(),
+                proveedor.getNombre(),
+                proveedor.getTelefono(),
+                proveedor.getCorreo()
+            });
         }
     }
 
-    public void editarProveedor(Proveedor proveedor) throws IOException, ParseException {
-        JSONArray proveedoresArray = proveedorDAO.leerProveedores();
+    public void editarProveedor(Proveedor proveedor) {
+        // Verifica si el proveedor existe en la base de datos
+        List<Proveedor> proveedores = proveedorDAO.leerProveedores();
         boolean proveedorEncontrado = false;
 
-        for (int i = 0; i < proveedoresArray.size(); i++) {
-            JSONObject proveedorJSON = (JSONObject) proveedoresArray.get(i);
-            int proveedorId = Integer.parseInt(proveedorJSON.get("id").toString());
-
-            if (proveedorId == proveedor.getId()) {
-                if (!proveedor.getCedulaJuridica().isEmpty()) {
-                    proveedorJSON.put("cedula", proveedor.getCedulaJuridica());
-                }
-                if (!proveedor.getNombre().isEmpty()) {
-                    proveedorJSON.put("nombre", proveedor.getNombre());
-                }
-                if (!proveedor.getTelefono().isEmpty()) {
-                    proveedorJSON.put("telefono", proveedor.getTelefono());
-                }
-                if (!proveedor.getCorreo().isEmpty()) {
-                    proveedorJSON.put("correo", proveedor.getCorreo());
-                }
-
+        for (Proveedor p : proveedores) {
+            if (p.getId() == proveedor.getId()) {
                 proveedorEncontrado = true;
                 break;
             }
         }
 
+        // Si el proveedor se encuentra, actualiza la información
         if (proveedorEncontrado) {
-            proveedorDAO.actualizarProveedores(proveedoresArray);
+            proveedorDAO.actualizarProveedor(proveedor);
+        } else {
+            System.out.println("No se encontró un proveedor con el ID " + proveedor.getId());
         }
     }
 
-    public void eliminarProveedor(int id) throws IOException, ParseException {
-        // Llamar al método DAO para eliminar el proveedor por ID
+    public void eliminarProveedor(int id) {
+        // Llama al método DAO para eliminar el proveedor por ID
         proveedorDAO.eliminarProveedor(id);
     }
-
 }

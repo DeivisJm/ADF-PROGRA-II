@@ -1,10 +1,8 @@
 package DAO;
 
 import ENTITY.DetalleCompra;
-import org.json.simple.*;
-import org.json.simple.parser.*;
+import java.sql.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,112 +13,76 @@ import java.util.List;
 public class DetalleCompraDAO {
 
     public void guardarDetalleCompra(DetalleCompra detalleCompra) {
-        try {
-            File archivoJSON = new File("DetalleCompra.json");
+        DB db = new DB();
+        String sql = "INSERT INTO detalle_compra (id_compra, id_producto, cantidad, monto) VALUES (?, ?, ?, ?)";
 
-            JSONParser parser = new JSONParser();
-            JSONArray detalleCompraArray = (JSONArray) parser.parse(new FileReader(archivoJSON));
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, detalleCompra.getIdCompra());
+            preparedStatement.setInt(2, Integer.parseInt(detalleCompra.getIdProducto())); // Conversión de String a int
+            preparedStatement.setInt(3, detalleCompra.getCantidad());
+            preparedStatement.setDouble(4, detalleCompra.getMonto());
 
-            JSONObject detalleCompraJSON = new JSONObject();
-            detalleCompraJSON.put("id", detalleCompra.getId_DetalleCompra());
-            detalleCompraJSON.put("cantidad", detalleCompra.getCantidad());
-            detalleCompraJSON.put("monto", detalleCompra.getMonto());
-            detalleCompraJSON.put("idProducto", detalleCompra.getIdProducto());
-            detalleCompraJSON.put("idCompra", detalleCompra.getIdCompra());
-
-            detalleCompraArray.add(detalleCompraJSON);
-
-            try (FileWriter fileWriter = new FileWriter("DetalleCompra.json")) {
-                fileWriter.write(detalleCompraArray.toJSONString());
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
     public void actualizarTabla(DefaultTableModel modeloTabla) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray detalleCompraArray = (JSONArray) parser.parse(new FileReader("DetalleCompra.json"));
+        DB db = new DB();
+        String sql = "SELECT * FROM detalle_compra";
 
-            modeloTabla.setRowCount(0);
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql); ResultSet resultSet = preparedStatement.executeQuery()) {
 
-            for (Object obj : detalleCompraArray) {
-                JSONObject detalleCompraJSON = (JSONObject) obj;
-                int idDetalleCompra = Integer.parseInt(detalleCompraJSON.get("id").toString());
-                if (idDetalleCompra != 0) {
-                    int cantidad = Integer.parseInt(detalleCompraJSON.get("cantidad").toString());
-                    double monto = Double.parseDouble(detalleCompraJSON.getOrDefault("monto", "0").toString());
-                    String idProducto = detalleCompraJSON.getOrDefault("idProducto", "").toString();
-                    int idCompra = Integer.parseInt(detalleCompraJSON.get("idCompra").toString());
-                    modeloTabla.addRow(new Object[]{idDetalleCompra, cantidad, monto, idProducto, idCompra});
-                }
+            modeloTabla.setRowCount(0); // Limpiar la tabla antes de actualizar
+
+            while (resultSet.next()) {
+                int idDetalleCompra = resultSet.getInt("id_detalle_compra");
+                int idCompra = resultSet.getInt("id_compra");
+                int idProducto = resultSet.getInt("id_producto");
+                int cantidad = resultSet.getInt("cantidad");
+                double monto = resultSet.getDouble("monto");
+
+                modeloTabla.addRow(new Object[]{idDetalleCompra, cantidad, monto, idProducto, idCompra});
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
     public void editarDetalleCompra(int idDetalleCompra, int cantidad, double monto, String idProducto, int idCompra) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray detalleCompraArray = (JSONArray) parser.parse(new FileReader("DetalleCompra.json"));
+        DB db = new DB();
+        String sql = "UPDATE detalle_compra SET cantidad = ?, monto = ?, id_producto = ?, id_compra = ? WHERE id_detalle_compra = ?";
 
-            for (Object obj : detalleCompraArray) {
-                JSONObject detalleCompraJSON = (JSONObject) obj;
-                int detalleId = Integer.parseInt(detalleCompraJSON.get("id").toString());
-                if (detalleId == idDetalleCompra) {
-                    if (cantidad >= 0) {
-                        detalleCompraJSON.put("cantidad", cantidad);
-                    }
-                    if (monto >= 0) {
-                        detalleCompraJSON.put("monto", monto);
-                    }
-                    if (idProducto != null) {
-                        detalleCompraJSON.put("idProducto", idProducto);
-                    }
-                    if (idCompra != 0) {
-                        detalleCompraJSON.put("idCompra", idCompra);
-                    }
-                    break;
-                }
-            }
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, cantidad);
+            preparedStatement.setDouble(2, monto);
+            preparedStatement.setInt(3, Integer.parseInt(idProducto)); // Conversión de String a int
+            preparedStatement.setInt(4, idCompra);
+            preparedStatement.setInt(5, idDetalleCompra);
 
-            try (FileWriter fileWriter = new FileWriter("DetalleCompra.json")) {
-                fileWriter.write(detalleCompraArray.toJSONString());
+            int rowsUpdated = preparedStatement.executeUpdate();
+            if (rowsUpdated == 0) {
+                System.out.println("No se encontró un detalle de compra con el ID " + idDetalleCompra);
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
     public void eliminarDetalleCompra(int idDetalleCompra) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray detalleCompraArray = (JSONArray) parser.parse(new FileReader("DetalleCompra.json"));
+        DB db = new DB();
+        String sql = "DELETE FROM detalle_compra WHERE id_detalle_compra = ?";
 
-            List<Integer> indicesAEliminar = new ArrayList<>();
-            boolean detalleEncontrado = false;
-            for (int i = 0; i < detalleCompraArray.size(); i++) {
-                JSONObject detalleCompraJSON = (JSONObject) detalleCompraArray.get(i);
-                int detalleId = Integer.parseInt(detalleCompraJSON.get("id").toString());
-                if (detalleId == idDetalleCompra) {
-                    indicesAEliminar.add(i);
-                    detalleEncontrado = true;
-                }
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, idDetalleCompra);
+
+            int rowsDeleted = preparedStatement.executeUpdate();
+            if (rowsDeleted == 0) {
+                System.out.println("No se encontró un detalle de compra con el ID " + idDetalleCompra);
             }
-
-            if (detalleEncontrado) {
-                for (int i : indicesAEliminar) {
-                    detalleCompraArray.remove(i);
-                }
-
-                try (FileWriter fileWriter = new FileWriter("DetalleCompra.json")) {
-                    fileWriter.write(detalleCompraArray.toJSONString());
-                }
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 }

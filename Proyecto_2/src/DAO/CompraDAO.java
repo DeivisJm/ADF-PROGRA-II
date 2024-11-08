@@ -1,10 +1,8 @@
 package DAO;
 
 import ENTITY.Compra;
-import org.json.simple.*;
-import org.json.simple.parser.*;
+import java.sql.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,134 +13,96 @@ import java.util.List;
 public class CompraDAO {
 
     public void guardarCompra(Compra compra) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray comprasArray = (JSONArray) parser.parse(new FileReader("compra.json"));
+        DB db = new DB();
+        String sql = "INSERT INTO compras (fecha, monto_total, id_cliente, id_detalle_compra) VALUES (?, ?, ?, ?)";
 
-            JSONObject compraJSON = new JSONObject();
-            compraJSON.put("id", compra.getId());
-            compraJSON.put("fecha", compra.getFecha());
-            compraJSON.put("montoTotal", compra.getMontoTotal());
-            compraJSON.put("id_cliente", compra.getId_cliente());
-            compraJSON.put("id_detallecompra", compra.getId_detalleCompra());
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, compra.getFecha());
+            preparedStatement.setDouble(2, compra.getMontoTotal());
+            preparedStatement.setInt(3, compra.getId_cliente());
+            preparedStatement.setInt(4, compra.getId_detalleCompra());
 
-            comprasArray.add(compraJSON);
-
-            try (FileWriter fileWriter = new FileWriter("compra.json")) {
-                fileWriter.write(comprasArray.toJSONString());
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
     public void actualizarTabla(DefaultTableModel modeloTabla) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray comprasArray = (JSONArray) parser.parse(new FileReader("compra.json"));
+        DB db = new DB();
+        String sql = "SELECT * FROM compras";
 
-            modeloTabla.setRowCount(0);
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql); ResultSet resultSet = preparedStatement.executeQuery()) {
 
-            for (Object obj : comprasArray) {
-                JSONObject compraJSON = (JSONObject) obj;
-                int idCompra = Integer.parseInt(compraJSON.get("id").toString());
-                if (idCompra != 0) {
-                    String fecha = compraJSON.getOrDefault("fecha", "").toString();
-                    double montoTotal = Double.parseDouble(compraJSON.get("montoTotal").toString());
-                    int idCliente = Integer.parseInt(compraJSON.get("id_cliente").toString());
-                    int idDetalleCompra = Integer.parseInt(compraJSON.get("id_detallecompra").toString());
-                    modeloTabla.addRow(new Object[]{idCompra, fecha, montoTotal, idCliente, idDetalleCompra});
-                }
+            modeloTabla.setRowCount(0); // Limpiar la tabla antes de actualizar
+
+            while (resultSet.next()) {
+                int idCompra = resultSet.getInt("id_compra");
+                String fecha = resultSet.getString("fecha");
+                double montoTotal = resultSet.getDouble("monto_total");
+                int idCliente = resultSet.getInt("id_cliente");
+                int idDetalleCompra = resultSet.getInt("id_detalle_compra");
+
+                modeloTabla.addRow(new Object[]{idCompra, fecha, montoTotal, idCliente, idDetalleCompra});
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
     public void editarCompra(int idCompra, String fecha, double montoTotal, int idCliente, int idDetalleCompra) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray comprasArray = (JSONArray) parser.parse(new FileReader("compra.json"));
+        DB db = new DB();
+        String sql = "UPDATE compras SET fecha = ?, monto_total = ?, id_cliente = ?, id_detalle_compra = ? WHERE id_compra = ?";
 
-            for (Object obj : comprasArray) {
-                JSONObject compraJSON = (JSONObject) obj;
-                int compraId = Integer.parseInt(compraJSON.get("id").toString());
-                if (compraId == idCompra) {
-                    if (!fecha.isEmpty()) {
-                        compraJSON.put("fecha", fecha);
-                    }
-                    if (montoTotal >= 0) {
-                        compraJSON.put("montoTotal", montoTotal);
-                    }
-                    if (idCliente != 0) {
-                        compraJSON.put("id_cliente", idCliente);
-                    }
-                    if (idDetalleCompra != 0) {
-                        compraJSON.put("id_detallecompra", idDetalleCompra);
-                    }
-                    break;
-                }
-            }
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, fecha);
+            preparedStatement.setDouble(2, montoTotal);
+            preparedStatement.setInt(3, idCliente);
+            preparedStatement.setInt(4, idDetalleCompra);
+            preparedStatement.setInt(5, idCompra);
 
-            try (FileWriter fileWriter = new FileWriter("compra.json")) {
-                fileWriter.write(comprasArray.toJSONString());
+            int rowsUpdated = preparedStatement.executeUpdate();
+            if (rowsUpdated == 0) {
+                System.out.println("No se encontró una compra con el ID " + idCompra);
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
     public void eliminarCompra(int idCompra) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray comprasArray = (JSONArray) parser.parse(new FileReader("compra.json"));
+        DB db = new DB();
+        String sql = "DELETE FROM compras WHERE id_compra = ?";
 
-            List<Integer> indicesAEliminar = new ArrayList<>();
-            boolean compraEncontrada = false;
-            for (int i = 0; i < comprasArray.size(); i++) {
-                JSONObject compraJSON = (JSONObject) comprasArray.get(i);
-                int compraId = Integer.parseInt(compraJSON.get("id").toString());
-                if (compraId == idCompra) {
-                    indicesAEliminar.add(i);
-                    compraEncontrada = true;
-                }
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, idCompra);
+
+            int rowsDeleted = preparedStatement.executeUpdate();
+            if (rowsDeleted == 0) {
+                System.out.println("No se encontró una compra con el ID " + idCompra);
             }
-
-            if (compraEncontrada) {
-                for (int i : indicesAEliminar) {
-                    comprasArray.remove(i);
-                }
-
-                try (FileWriter fileWriter = new FileWriter("compra.json")) {
-                    fileWriter.write(comprasArray.toJSONString());
-                }
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
-    public String obtenerIdProductoPorNombreYSubcategoria(String nombreProducto, String subCategoria) throws IOException, ParseException {
-        JSONParser parser = new JSONParser();
-        String idProducto = null;
+    // Este método es opcional y puede requerir modificaciones adicionales para trabajar con la base de datos
+    public String obtenerIdProductoPorNombreYSubcategoria(String nombreProducto, String subCategoria) {
+        DB db = new DB();
+        String sql = "SELECT id_producto FROM productos WHERE nombre = ? AND id_subcategoria = (SELECT id_subcategoria FROM subcategorias WHERE nombre = ?)";
 
-        try (FileReader reader = new FileReader("productos.json")) {
-            JSONObject main = (JSONObject) parser.parse(reader);
-            JSONArray categoriaProductos = (JSONArray) main.get(subCategoria);
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, nombreProducto);
+            preparedStatement.setString(2, subCategoria);
 
-            if (categoriaProductos != null) {
-                for (Object productoObj : categoriaProductos) {
-                    JSONObject producto = (JSONObject) productoObj;
-                    String nombre = (String) producto.get("nombre");
-                    if (nombreProducto.equals(nombre)) {
-                        idProducto = (String) producto.get("id");
-                        break;
-                    }
-                }
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return String.valueOf(resultSet.getInt("id_producto"));
             }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
 
-        return idProducto;
+        return null;
     }
-    
 }

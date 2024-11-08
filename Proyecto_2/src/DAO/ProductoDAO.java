@@ -1,10 +1,8 @@
 package DAO;
 
 import ENTITY.Producto;
-import org.json.simple.*;
-import org.json.simple.parser.*;
+import java.sql.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,154 +13,116 @@ import java.util.List;
 public class ProductoDAO {
 
     public void guardarProducto(String subcategoria, Producto producto) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject;
+        DB db = new DB();
+        String sql = "INSERT INTO productos (nombre, precio, peso, id_proveedor, id_categoria, marca, imagen, cantidad) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-            try (FileReader reader = new FileReader("productos.json")) {
-                jsonObject = (JSONObject) parser.parse(reader);
-            }
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, producto.getNombre());
+            preparedStatement.setDouble(2, producto.getPrecio());
+            preparedStatement.setString(3, producto.getPeso());
+            preparedStatement.setInt(4, Integer.parseInt(producto.getIdProveedor()));
+            preparedStatement.setInt(5, Integer.parseInt(producto.getIdCategoria()));
+            preparedStatement.setInt(6, Integer.parseInt(producto.getIdMarca()));
+            preparedStatement.setString(7, producto.getImagen());
+            preparedStatement.setInt(8, producto.getCantidad());
 
-            JSONArray subcategoriaArray = (JSONArray) jsonObject.get(subcategoria);
-            if (subcategoriaArray == null) {
-                subcategoriaArray = new JSONArray();
-                jsonObject.put(subcategoria, subcategoriaArray);
-            }
-
-            JSONObject productoJSON = new JSONObject();
-            productoJSON.put("id", producto.getIdProducto());
-            productoJSON.put("nombre", producto.getNombre());
-            productoJSON.put("precio", producto.getPrecio());
-            productoJSON.put("peso", producto.getPeso());
-            productoJSON.put("id_proveedor", producto.getIdProveedor());
-            productoJSON.put("id_categoria", producto.getIdCategoria());
-            productoJSON.put("id_marca", producto.getIdMarca());
-            productoJSON.put("cantidad", producto.getCantidad());
-
-            subcategoriaArray.add(productoJSON);
-
-            try (FileWriter fileWriter = new FileWriter("productos.json")) {
-                fileWriter.write(jsonObject.toJSONString());
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // En producción, reemplazar con un logger
         }
     }
 
     public void actualizarTabla(DefaultTableModel modeloTabla, String subcategoria) {
+        DB db = new DB();
+        int idSubcategoria;
+
         try {
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject;
+            idSubcategoria = Integer.parseInt(subcategoria);
+        } catch (NumberFormatException e) {
+            idSubcategoria = obtenerIdSubcategoriaPorNombre(subcategoria);
+        }
 
-            try (FileReader reader = new FileReader("productos.json")) {
-                jsonObject = (JSONObject) parser.parse(reader);
-            }
+        if (idSubcategoria == -1) {
+            System.out.println("La subcategoría no se encontró.");
+            return;
+        }
 
-            // Verifica si la subcategoría existe en el JSON
-            JSONArray subcategoriaArray = (JSONArray) jsonObject.get(subcategoria);
-            if (subcategoriaArray == null) {
-                System.out.println("Subcategoría no encontrada: " + subcategoria);
-                return; 
-            }
-
+        String sql = "SELECT * FROM productos WHERE id_subcategoria = ?";
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, idSubcategoria);
+            ResultSet resultSet = preparedStatement.executeQuery();
             modeloTabla.setRowCount(0); // Limpiar la tabla antes de actualizar
 
-            for (Object obj : subcategoriaArray) {
-                JSONObject productoJSON = (JSONObject) obj;
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id_producto");
+                String nombre = resultSet.getString("nombre");
+                double precio = resultSet.getDouble("precio");
+                String peso = resultSet.getString("peso");
+                int idProveedor = resultSet.getInt("id_proveedor");
+                int idCategoria = resultSet.getInt("id_categoria");
+                int idMarca = resultSet.getInt("marca");
+                int cantidad = resultSet.getInt("cantidad");
 
-                // Verificar si cada valor es nulo antes de convertirlo a String
-                String id = productoJSON.get("id") != null ? productoJSON.get("id").toString() : "";
-                String nombre = productoJSON.get("nombre") != null ? productoJSON.get("nombre").toString() : "";
-                double precio = productoJSON.get("precio") != null ? Double.parseDouble(productoJSON.get("precio").toString()) : 0.0;
-                String peso = productoJSON.get("peso") != null ? productoJSON.get("peso").toString() : "";
-                String idProveedor = productoJSON.get("id_proveedor") != null ? productoJSON.get("id_proveedor").toString() : "";
-                String idCategoria = productoJSON.get("id_categoria") != null ? productoJSON.get("id_categoria").toString() : "";
-                String idMarca = productoJSON.get("id_marca") != null ? productoJSON.get("id_marca").toString() : "";
-                int cantidad = productoJSON.get("cantidad") != null ? Integer.parseInt(productoJSON.get("cantidad").toString()) : 0;
-
-                // Agregar la fila a la tabla
                 modeloTabla.addRow(new Object[]{id, nombre, precio, peso, idProveedor, idCategoria, idMarca, cantidad});
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // En producción, reemplazar con un logger
         }
     }
 
-    public void eliminarProducto(String subcategoria, String idProductoAEliminar) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject;
+    public void eliminarProducto(String subcategoria, String idProducto) {
+        DB db = new DB();
+        String sql = "DELETE FROM productos WHERE id_producto = ? AND id_subcategoria = ?";
 
-            try (FileReader reader = new FileReader("productos.json")) {
-                jsonObject = (JSONObject) parser.parse(reader);
-            }
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, Integer.parseInt(idProducto));
+            preparedStatement.setInt(2, Integer.parseInt(subcategoria));
 
-            JSONArray subcategoriaArray = (JSONArray) jsonObject.get(subcategoria);
-            if (subcategoriaArray != null) {
-                List<Integer> indicesAEliminar = new ArrayList<>();
-                for (int i = 0; i < subcategoriaArray.size(); i++) {
-                    JSONObject productoJSON = (JSONObject) subcategoriaArray.get(i);
-                    String productoId = productoJSON.get("id").toString();
-                    if (productoId.equals(idProductoAEliminar)) {
-                        indicesAEliminar.add(i);
-                    }
-                }
-
-                for (int i : indicesAEliminar) {
-                    subcategoriaArray.remove(i);
-                }
-                try (FileWriter fileWriter = new FileWriter("productos.json")) {
-                    fileWriter.write(jsonObject.toJSONString());
-                }
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // En producción, reemplazar con un logger
         }
     }
 
     public void editarProducto(String subcategoria, Producto producto) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject;
+        DB db = new DB();
+        String sql = "UPDATE productos SET nombre = ?, precio = ?, peso = ?, id_proveedor = ?, id_categoria = ?, marca = ?, imagen = ?, cantidad = ? WHERE id_producto = ? AND id_subcategoria = ?";
 
-            try (FileReader reader = new FileReader("productos.json")) {
-                jsonObject = (JSONObject) parser.parse(reader);
-            }
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, producto.getNombre());
+            preparedStatement.setDouble(2, producto.getPrecio());
+            preparedStatement.setString(3, producto.getPeso());
+            preparedStatement.setInt(4, Integer.parseInt(producto.getIdProveedor()));
+            preparedStatement.setInt(5, Integer.parseInt(producto.getIdCategoria()));
+            preparedStatement.setInt(6, Integer.parseInt(producto.getIdMarca()));
+            preparedStatement.setString(7, producto.getImagen());
+            preparedStatement.setInt(8, producto.getCantidad());
+            preparedStatement.setInt(9, Integer.parseInt(producto.getIdProducto()));
+            preparedStatement.setInt(10, Integer.parseInt(subcategoria));
 
-            JSONArray subcategoriaArray = (JSONArray) jsonObject.get(subcategoria);
-            for (int i = 0; i < subcategoriaArray.size(); i++) {
-                JSONObject productoJSON = (JSONObject) subcategoriaArray.get(i);
-                String productoId = productoJSON.get("id").toString();
-                if (productoId.equals(producto.getIdProducto())) {
-                    if (!producto.getNombre().isEmpty()) {
-                        productoJSON.put("nombre", producto.getNombre());
-                    }
-                    if (producto.getPrecio() > 0) {
-                        productoJSON.put("precio", producto.getPrecio());
-                    }
-                    if (!producto.getPeso().isEmpty()) {
-                        productoJSON.put("peso", producto.getPeso());
-                    }
-                    if (!producto.getIdProveedor().isEmpty()) {
-                        productoJSON.put("id_proveedor", producto.getIdProveedor());
-                    }
-                    if (!producto.getIdCategoria().isEmpty()) {
-                        productoJSON.put("id_categoria", producto.getIdCategoria());
-                    }
-                    if (!producto.getIdMarca().isEmpty()) {
-                        productoJSON.put("id_marca", producto.getIdMarca());
-                    }
-                    if (producto.getCantidad() >= 0) {
-                        productoJSON.put("cantidad", producto.getCantidad());
-                    }
-                    break;
-                }
-            }
-            try (FileWriter fileWriter = new FileWriter("productos.json")) {
-                fileWriter.write(jsonObject.toJSONString());
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // En producción, reemplazar con un logger
         }
     }
+
+    public int obtenerIdSubcategoriaPorNombre(String nombreSubcategoria) {
+        DB db = new DB();
+        String sql = "SELECT id_subcategoria FROM subcategorias WHERE nombre_subcategoria = ?";
+        int idSubcategoria = -1;
+
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, nombreSubcategoria);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                idSubcategoria = resultSet.getInt("id_subcategoria");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // En producción, usar un logger
+        }
+
+        return idSubcategoria;
+    }
+
 }

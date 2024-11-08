@@ -1,11 +1,9 @@
 package DAO;
 
-import java.io.*;
+import ENTITY.Proveedor;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.json.simple.*;
-import org.json.simple.parser.*;
-import ENTITY.Proveedor;
 
 /**
  *
@@ -13,71 +11,83 @@ import ENTITY.Proveedor;
  */
 public class ProveedorDAO {
 
-    public JSONArray leerProveedores() throws IOException, ParseException {
-        JSONParser parser = new JSONParser();
-        // Lee el archivo JSON y devuelve un JSONArray con los proveedores
-        return (JSONArray) parser.parse(new FileReader("proveedor.json"));
-    }
+    public List<Proveedor> leerProveedores() {
+        List<Proveedor> proveedores = new ArrayList<>();
+        DB db = new DB();
 
-    public void guardarProveedor(Proveedor proveedor) throws IOException, ParseException {
-        File archivoJSON = new File("proveedor.json");
-        JSONParser parser = new JSONParser();
-        JSONArray proveedorArray = (JSONArray) parser.parse(new FileReader(archivoJSON));
+        try (Connection connection = db.getConnection()) {
+            // Consulta SQL para seleccionar todos los proveedores
+            String sql = "SELECT * FROM proveedor";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
 
-        JSONObject proveedorJSON = new JSONObject();
-        proveedorJSON.put("id", proveedor.getId());
-        proveedorJSON.put("cedula", proveedor.getCedulaJuridica());
-        proveedorJSON.put("nombre", proveedor.getNombre());
-        proveedorJSON.put("telefono", proveedor.getTelefono());
-        proveedorJSON.put("correo", proveedor.getCorreo());
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String cedulaJuridica = resultSet.getString("cedula_juridica");
+                String nombre = resultSet.getString("nombre");
+                String telefono = resultSet.getString("telefono");
+                String correo = resultSet.getString("correo");
 
-        proveedorArray.add(proveedorJSON);
-
-        FileWriter fileWriter = new FileWriter("proveedor.json");
-        fileWriter.write(proveedorArray.toJSONString());
-        fileWriter.flush();
-        fileWriter.close();
-    }
-
-    public void actualizarProveedores(JSONArray proveedorArray) throws IOException {
-        // Abre el archivo JSON para escribir los datos actualizados
-        FileWriter fileWriter = new FileWriter("proveedor.json");
-
-        // Escribe el JSONArray actualizado en el archivo
-        fileWriter.write(proveedorArray.toJSONString());
-
-        // Limpia y cierra el archivo
-        fileWriter.flush();
-        fileWriter.close();
-    }
-
-    public void eliminarProveedor(int id) throws IOException, ParseException {
-        // Leer el archivo JSON existente
-        JSONParser parser = new JSONParser();
-        JSONArray proveedorArray = (JSONArray) parser.parse(new FileReader("proveedor.json"));
-
-        List<Integer> indicesAEliminar = new ArrayList<>();
-        boolean proveedorEncontrado = false;
-
-        // Buscar el proveedor con el ID especificado y marcarlo para eliminar
-        for (int i = 0; i < proveedorArray.size(); i++) {
-            JSONObject proveedorJSON = (JSONObject) proveedorArray.get(i);
-            int proveedorId = Integer.parseInt(proveedorJSON.get("id").toString());
-
-            if (proveedorId == id) {
-                indicesAEliminar.add(i);
-                proveedorEncontrado = true;
+                Proveedor proveedor = new Proveedor(id, cedulaJuridica, nombre, telefono, correo);
+                proveedores.add(proveedor);
             }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Deberías usar un logger en un entorno de producción
         }
 
-        // Eliminar los proveedores marcados del JSONArray
-        if (proveedorEncontrado) {
-            for (int i : indicesAEliminar) {
-                proveedorArray.remove(i);
-            }
-            // Actualizar el archivo JSON con la lista modificada
-            actualizarProveedores(proveedorArray);
+        return proveedores;
+    }
+
+    public void guardarProveedor(Proveedor proveedor) {
+        DB db = new DB();
+
+        try (Connection connection = db.getConnection()) {
+            // Consulta SQL para insertar un nuevo proveedor
+            String sql = "INSERT INTO proveedor (id, cedula_juridica, nombre, telefono, correo) VALUES (?, ?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, proveedor.getId());
+            preparedStatement.setString(2, proveedor.getCedulaJuridica());
+            preparedStatement.setString(3, proveedor.getNombre());
+            preparedStatement.setString(4, proveedor.getTelefono());
+            preparedStatement.setString(5, proveedor.getCorreo());
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Deberías usar un logger en un entorno de producción
         }
     }
 
+    public void actualizarProveedor(Proveedor proveedor) {
+        DB db = new DB();
+
+        try (Connection connection = db.getConnection()) {
+            // Consulta SQL para actualizar un proveedor existente
+            String sql = "UPDATE proveedor SET cedula_juridica = ?, nombre = ?, telefono = ?, correo = ? WHERE id = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, proveedor.getCedulaJuridica());
+            preparedStatement.setString(2, proveedor.getNombre());
+            preparedStatement.setString(3, proveedor.getTelefono());
+            preparedStatement.setString(4, proveedor.getCorreo());
+            preparedStatement.setInt(5, proveedor.getId());
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Deberías usar un logger en un entorno de producción
+        }
+    }
+
+    public void eliminarProveedor(int id) {
+        DB db = new DB();
+
+        try (Connection connection = db.getConnection()) {
+            // Consulta SQL para eliminar un proveedor por ID
+            String sql = "DELETE FROM proveedor WHERE id = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Deberías usar un logger en un entorno de producción
+        }
+    }
 }

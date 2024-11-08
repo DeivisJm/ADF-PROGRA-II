@@ -1,10 +1,8 @@
 package DAO;
 
 import ENTITY.Marca;
-import org.json.simple.*;
-import org.json.simple.parser.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.*;
+import java.sql.*;
 
 /**
  *
@@ -13,87 +11,67 @@ import java.io.*;
 public class MarcaDAO {
 
     public void guardarMarca(Marca marca) {
-        try {
-            File archivoJSON = new File("marca.json");
-            if (!archivoJSON.exists()) {
-                archivoJSON.createNewFile();
-                JSONArray marcasArrayVacio = new JSONArray();
-                try (FileWriter fileWriter = new FileWriter(archivoJSON)) {
-                    fileWriter.write(marcasArrayVacio.toJSONString());
-                }
+        DB db = new DB();
+        String sql = "INSERT INTO marcas (id, nombre) VALUES (?, ?)";
+
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, marca.getId());
+            preparedStatement.setString(2, marca.getNombre());
+
+            // Verificar si la marca ya existe en la base de datos
+            if (marcaExiste(connection, marca.getNombre())) {
+                System.out.println("Ya existe una marca con el nombre " + marca.getNombre());
+                return;
             }
 
-            JSONParser parser = new JSONParser();
-            JSONArray marcasArray = (JSONArray) parser.parse(new FileReader(archivoJSON));
-
-            for (Object obj : marcasArray) {
-                JSONObject marcaJSON = (JSONObject) obj;
-                String nombreMarca = marcaJSON.get("nombre").toString();
-                if (nombreMarca.equals(marca.getNombre())) {
-                    System.out.println("Ya existe una marca con el nombre " + marca.getNombre());
-                    return;
-                }
-            }
-
-            JSONObject marcaJSON = new JSONObject();
-            marcaJSON.put("id", marca.getId());
-            marcaJSON.put("nombre", marca.getNombre());
-            marcasArray.add(marcaJSON);
-
-            try (FileWriter fileWriter = new FileWriter("marca.json")) {
-                fileWriter.write(marcasArray.toJSONString());
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
     public void actualizarTabla(DefaultTableModel modeloTabla) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray marcasArray = (JSONArray) parser.parse(new FileReader("marca.json"));
+        DB db = new DB();
+        String sql = "SELECT id, nombre FROM marcas";
 
-            modeloTabla.setRowCount(0);
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            modeloTabla.setRowCount(0); // Limpiar la tabla antes de actualizar
 
-            for (Object obj : marcasArray) {
-                JSONObject marcaJSON = (JSONObject) obj;
-                int Id = Integer.parseInt(marcaJSON.get("id").toString());
-                if (Id != 0) {
-                    String Nombre = marcaJSON.get("nombre") != null ? marcaJSON.get("nombre").toString() : "";
-                    modeloTabla.addRow(new Object[]{Id, Nombre});
-                }
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String nombre = resultSet.getString("nombre");
+                modeloTabla.addRow(new Object[]{id, nombre});
             }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
         }
     }
 
     public void editarMarca(int id, String nombre) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONArray marcasArray = (JSONArray) parser.parse(new FileReader("marca.json"));
-            boolean marcaEncontrada = false;
+        DB db = new DB();
+        String sql = "UPDATE marcas SET nombre = ? WHERE id = ?";
 
-            for (int i = 0; i < marcasArray.size(); i++) {
-                JSONObject marcaJSON = (JSONObject) marcasArray.get(i);
-                int marcaId = Integer.parseInt(marcaJSON.get("id").toString());
+        try (Connection connection = db.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, nombre);
+            preparedStatement.setInt(2, id);
 
-                if (marcaId == id) {
-                    if (!nombre.isEmpty()) {
-                        marcaJSON.put("nombre", nombre);
-                    }
-                    marcaEncontrada = true;
-                    break;
-                }
+            int rowsUpdated = preparedStatement.executeUpdate();
+            if (rowsUpdated == 0) {
+                System.out.println("No se encontró una marca con el ID " + id);
             }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Reemplazar con un logger en un entorno de producción
+        }
+    }
 
-            if (marcaEncontrada) {
-                try (FileWriter fileWriter = new FileWriter("marca.json")) {
-                    fileWriter.write(marcasArray.toJSONString());
-                }
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+    // Método auxiliar para verificar si una marca ya existe en la base de datos
+    private boolean marcaExiste(Connection connection, String nombre) throws SQLException {
+        String sql = "SELECT 1 FROM marcas WHERE nombre = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, nombre);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return resultSet.next();
         }
     }
 }
