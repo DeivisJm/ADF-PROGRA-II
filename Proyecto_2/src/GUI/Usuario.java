@@ -6,6 +6,7 @@ import ENTITY.Compra;
 import ENTITY.Datos;
 import ENTITY.DetalleCompra;
 import BO.*;
+import DAO.DB;
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -18,7 +19,6 @@ import org.json.simple.parser.*;
  *
  * @author deivi
  */
-
 public class Usuario extends javax.swing.JFrame {
 
     private FacturacionBO facturacionBO;
@@ -156,10 +156,17 @@ public class Usuario extends javax.swing.JFrame {
     }
 
     //Aquí cargamos los productos
-    private void cargarProductos(String subcategoria) {
+    private void cargarProductos(int idSubcategoria) {
         Datos datos = new Datos();
-        ListaProductos listaProductos = new ListaProductos(datos.cargarProductos(subcategoria), this);
-        scrollProductos.setViewportView(listaProductos);
+        List<Producto> productos = datos.obtenerProductosPorSubcategoria(idSubcategoria);
+
+        if (productos.isEmpty()) {
+            System.out.println("No se encontraron productos para la subcategoría seleccionada.");
+        } else {
+            // Crear el panel de productos y mostrarlo en el JScrollPane
+            ListaProductos listaProductos = new ListaProductos(productos, this);
+            scrollProductos.setViewportView(listaProductos);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -509,14 +516,31 @@ public class Usuario extends javax.swing.JFrame {
 //Podemos elegir las Categorías con getSelectedItem
     private void comboCategoriasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboCategoriasActionPerformed
         String categoriaSeleccionada = (String) comboCategorias.getSelectedItem();
-        actualizarComboSubcategorias(categoriaSeleccionada);
-        String subcategoriaSeleccionada = (String) comboSubcategorias.getSelectedItem();
-        cargarProductos(subcategoriaSeleccionada);
+        Datos datos = new Datos();
+        int idCategoriaSeleccionada = datos.obtenerIdCategoria(categoriaSeleccionada);
+
+        if (idCategoriaSeleccionada != -1) {
+            // Cargar subcategorías en el comboSubcategorias basadas en la categoría seleccionada
+            List<String> subcategorias = datos.obtenerSubcategoriasPorCategoria(categoriaSeleccionada);
+            comboSubcategorias.removeAllItems();
+            for (String subcategoria : subcategorias) {
+                comboSubcategorias.addItem(subcategoria);
+            }
+        } else {
+            System.out.println("Categoría no encontrada.");
+        }
     }//GEN-LAST:event_comboCategoriasActionPerformed
     ////Podemos elegir las subcategorías con getSelectedItem
     private void comboSubcategoriasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboSubcategoriasActionPerformed
         String subcategoriaSeleccionada = (String) comboSubcategorias.getSelectedItem();
-        cargarProductos(subcategoriaSeleccionada);
+        Datos datos = new Datos();
+        int idSubcategoriaSeleccionada = datos.obtenerIdSubcategoria(subcategoriaSeleccionada);
+
+        if (idSubcategoriaSeleccionada != -1) {
+            cargarProductos(idSubcategoriaSeleccionada); // Llama al método para cargar los productos de la subcategoría seleccionada
+        } else {
+            System.out.println("Subcategoría no encontrada.");
+        }
     }//GEN-LAST:event_comboSubcategoriasActionPerformed
 
     private void btnFinalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFinalizarActionPerformed

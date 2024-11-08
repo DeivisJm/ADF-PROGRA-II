@@ -1,11 +1,14 @@
 package GUI;
 
 import ENTITY.Producto;
+import java.awt.Image;
+import java.io.File;
+import javax.swing.ImageIcon;
+
 /**
  *
  * @author andrew
  */
-
 public class ProductoPanel extends javax.swing.JPanel {
 
     private Producto producto;
@@ -15,17 +18,29 @@ public class ProductoPanel extends javax.swing.JPanel {
 
     //Configuramos el texto en las etiquetas de los productos
     public ProductoPanel(Producto producto, Usuario parent) {
-        try {
-            initComponents();
-            this.producto = producto;
-            lblNombre.setText(producto.getNombre());
-            lblPeso.setText(producto.getPeso());
-            lblPrecio.setText("₡ " + producto.getPrecio());
-            lblImgen.setIcon(new javax.swing.ImageIcon(getClass().getResource(producto.getImagen())));
+        initComponents();
+        this.producto = producto;
+        lblNombre.setText(producto.getNombre());
+        lblPeso.setText(producto.getPeso());
+        lblPrecio.setText("₡" + producto.getPrecio());
 
+        try {
+            lblImgen.setIcon(new javax.swing.ImageIcon(getClass().getResource(producto.getImagen())));
         } catch (Exception e) {
-            System.out.println(producto.getImagen());
+            try {
+                File imageFile = new File(producto.getImagen());
+
+                if (imageFile.exists() && !imageFile.isDirectory()) {
+                    ImageIcon imageIcon = new ImageIcon(producto.getImagen());
+                    lblImgen.setIcon(imageIcon);
+                } else {
+                    System.out.println("Error al cargar la imagen: " + producto.getImagen());
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
+
         this.parent = parent;
     }
 

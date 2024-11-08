@@ -17,7 +17,7 @@ public class DB {
         try {
             Class.forName("org.mariadb.jdbc.Driver");
             connection = DriverManager.getConnection(URL, LOGIN, PASSWORD);
-            System.out.println("Conexión exitosa a la base de datos.");
+            System.out.println("Conexion exitosa a la base de datos.");
         } catch (ClassNotFoundException e) {
             System.err.println("Error al cargar el controlador JDBC: " + e.getMessage());
         } catch (SQLException e) {
@@ -33,7 +33,7 @@ public class DB {
         if (connection != null) {
             try {
                 connection.close();
-                System.out.println("Conexión cerrada.");
+                System.out.println("Conexion cerrada.");
             } catch (SQLException e) {
                 System.err.println("Error al cerrar la conexión: " + e.getMessage());
             }
